@@ -1,0 +1,2 @@
+#!/bin/sh
+node --import tsx scripts/check-secrets.ts

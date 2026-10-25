@@ -1,0 +1,17 @@
+node_modules/
+.next/
+.next-*/
+out/
+build/
+coverage/
+test-results/
+playwright-report/
+artifacts/
+var/
+docs/
+public/
+next-env.d.ts
+payload-types.ts
+src/backend/infrastructure/payload/migrations/
+package-lock.json
+.env*
