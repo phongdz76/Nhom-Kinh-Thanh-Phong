@@ -1,0 +1,152 @@
+import path from "node:path";
+import { buildConfig } from "payload";
+import { postgresAdapter } from "@payloadcms/db-postgres";
+import { s3Storage } from "@payloadcms/storage-s3";
+import { nodemailerAdapter } from "@payloadcms/email-nodemailer";
+import {
+  collections,
+  siteSettings,
+} from "@/backend/infrastructure/payload/collections/backend";
+
+const storageKeys = [
+  "R2_ENDPOINT",
+  "R2_BUCKET",
+  "R2_ACCESS_KEY_ID",
+  "R2_SECRET_ACCESS_KEY",
+  "MEDIA_PUBLIC_URL",
+];
+const configuredStorage = storageKeys.filter((key) => process.env[key]);
+if (configuredStorage.length && configuredStorage.length !== storageKeys.length)
+  throw new Error("Configure all R2 storage variables together.");
+if (!process.env.PAYLOAD_SECRET || process.env.PAYLOAD_SECRET.length < 32)
+  throw new Error("PAYLOAD_SECRET must contain at least 32 characters.");
+if (!process.env.DATABASE_URL)
+  throw new Error("DATABASE_URL is required. Run the local setup first.");
+
+export default buildConfig({
+  secret: process.env.PAYLOAD_SECRET,
+  serverURL: process.env.SERVER_URL || "http://localhost:3000",
+  cookiePrefix: "thanhphong",
+  admin: { user: "users" },
+  telemetry: false,
+  typescript: { autoGenerate: false },
+  db: postgresAdapter({
+    pool: { connectionString: process.env.DATABASE_URL, max: 10 },
+    idType: "uuid",
+    push: false,
+    migrationDir: path.resolve("src/backend/infrastructure/payload/migrations"),
+  }),
+  collections,
+  globals: [siteSettings],
+  ...(process.env.SMTP_HOST
+    ? {
+        email: nodemailerAdapter({
+          skipVerify: true,
+          defaultFromAddress: process.env.SMTP_FROM || "",
+          defaultFromName: "Thanh Phong",
+          transportOptions: {
+            host: process.env.SMTP_HOST,
+            port: Number(process.env.SMTP_PORT || 587),
+            secure: process.env.SMTP_PORT === "465",
+            connectionTimeout: 10000,
+            greetingTimeout: 10000,
+            socketTimeout: 15000,
+            ...(process.env.SMTP_USER
+              ? {
+                  auth: {
+                    user: process.env.SMTP_USER,
+                    pass: process.env.SMTP_PASSWORD,
+                  },
+                }
+              : {}),
+          },
+        }),
+      }
+    : {
+        email: () => ({
+          name: "not-configured",
+          defaultFromAddress: "",
+          defaultFromName: "Thanh Phong",
+          sendEmail: async () => {
+            throw new Error("Email transport is not configured.");
+          },
+        }),
+      }),
+  plugins: configuredStorage.length
+    ? [
+        s3Storage({
+          collections: {
+            media: {
+              generateFileURL: ({ filename }) =>
+                `${process.env.MEDIA_PUBLIC_URL!.replace(/\/$/, "")}/${encodeURIComponent(filename)}`,
+            },
+          },
+          bucket: process.env.R2_BUCKET!,
+          config: {
+            endpoint: process.env.R2_ENDPOINT,
+            region: "auto",
+            forcePathStyle: true,
+            credentials: {
+              accessKeyId: process.env.R2_ACCESS_KEY_ID!,
+              secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
+            },
+          },
+        }),
+      ]
+    : [],
+  jobs: {
+    deleteJobOnComplete: false,
+    access: { run: () => false, queue: () => false },
+    tasks: [
+      {
+        slug: "notify-lead",
+        inputSchema: [{ name: "leadId", type: "text", required: true }],
+        retries: {
+          attempts: 4,
+          backoff: { type: "exponential", delay: 60000 },
+        },
+        handler: async ({ input, req }) => {
+          const lead = await req.payload.findByID({
+            collection: "leads",
+            id: String(input.leadId),
+            depth: 0,
+          });
+          if (lead.notificationState === "sent") return { output: {} };
+          if (!process.env.SMTP_HOST || !process.env.LEAD_NOTIFICATION_EMAIL) {
+            await req.payload.update({
+              collection: "leads",
+              id: lead.id,
+              data: { notificationState: "not_configured" },
+            });
+            throw new Error(
+              "Notification email is not configured. The lead remains available in admin.",
+            );
+          }
+          try {
+            await req.payload.sendEmail({
+              to: process.env.LEAD_NOTIFICATION_EMAIL,
+              subject: `Thanh Phong: yêu cầu mới ${lead.code}`,
+              text: `Có yêu cầu tư vấn mới: ${lead.code}. Đăng nhập để xử lý: ${process.env.SERVER_URL}/admin?tab=leads`,
+            });
+            await req.payload.update({
+              collection: "leads",
+              id: lead.id,
+              data: {
+                notificationState: "sent",
+                notifiedAt: new Date().toISOString(),
+              },
+            });
+            return { output: {} };
+          } catch (error) {
+            await req.payload.update({
+              collection: "leads",
+              id: lead.id,
+              data: { notificationState: "failed" },
+            });
+            throw error;
+          }
+        },
+      },
+    ],
+  },
+});

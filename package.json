@@ -2,18 +2,75 @@
   "name": "nhomkinhthanhphong",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start"
+    "predev": "tsx scripts/ensure-database.ts",
+    "dev": "next dev --webpack",
+    "build": "next build --webpack",
+    "start": "next start",
+    "test:ui": "playwright test",
+    "db:up": "tsx scripts/ensure-database.ts",
+    "db:create-migration": "tsx scripts/database.ts create-migration",
+    "db:migrate": "tsx scripts/database.ts migrate",
+    "db:init": "tsx scripts/database.ts init",
+    "db:seed-demo": "tsx scripts/database.ts seed-demo",
+    "jobs:run": "tsx scripts/jobs.ts",
+    "typecheck": "next typegen && tsc --noEmit",
+    "check:architecture": "tsx scripts/check-architecture.ts",
+    "check:secrets": "tsx scripts/check-secrets.ts",
+    "check:secrets:history": "tsx scripts/check-secrets.ts --history",
+    "test:unit": "node --import tsx --test tests/unit/*.test.ts",
+    "clean": "tsx scripts/clean.ts",
+    "test:setup": "tsx scripts/test-setup.ts",
+    "setup": "tsx scripts/setup-local.ts",
+    "jobs:work": "tsx scripts/jobs-worker.ts",
+    "db:reset-password": "tsx scripts/database.ts reset-password",
+    "lint": "eslint . --max-warnings=0",
+    "lint:fix": "eslint . --fix --max-warnings=0",
+    "format:check": "prettier --check .",
+    "format": "prettier --write .",
+    "check": "npm run lint && npm run format:check && npm run check:architecture && npm run typecheck && npm run test:unit"
   },
   "dependencies": {
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
-    "next": "15.5.4"
+    "@payloadcms/db-postgres": "3.91.0",
+    "@payloadcms/email-nodemailer": "3.91.0",
+    "@payloadcms/next": "3.91.0",
+    "@payloadcms/storage-s3": "3.91.0",
+    "docx": "^9.14.0",
+    "dotenv": "^18.0.8",
+    "exceljs": "^4.4.0",
+    "graphql": "^16.14.2",
+    "next": "16.4.2",
+    "payload": "3.91.0",
+    "pg": "^8.23.1",
+    "qrcode": "^1.5.4",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "sharp": "^0.35.5",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
     "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4"
+    "@types/node": "^26.6.5",
+    "@types/pg": "^8.23.1",
+    "@types/qrcode": "^1.5.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "eslint": "10.13.0",
+    "eslint-config-next": "16.4.2",
+    "eslint-config-prettier": "^10.1.8",
+    "jsqr": "^1.4.0",
+    "jszip": "^3.10.2",
+    "prettier": "3.9.10",
+    "tailwindcss": "^4",
+    "tsx": "^4.23.15",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.72.0"
+  },
+  "overrides": {
+    "next": {
+      "postcss": "8.5.31"
+    }
   }
 }

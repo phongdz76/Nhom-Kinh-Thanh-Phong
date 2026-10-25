@@ -1,0 +1,48 @@
+name: thanhphong
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: thanhphong
+      POSTGRES_USER: thanhphong
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env.local}
+    ports:
+      - "127.0.0.1:55432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U thanhphong -d thanhphong"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+  app:
+    profiles: ["app"]
+    image: thanhphong-web:local
+    build: .
+    restart: unless-stopped
+    env_file: .env.local
+    environment: &app-environment
+      DATABASE_URL: postgresql://thanhphong:${POSTGRES_PASSWORD}@db:5432/thanhphong
+      MEDIA_DIR: /app/var/media
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - media-data:/app/var/media
+    depends_on:
+      db:
+        condition: service_healthy
+  worker:
+    profiles: ["app"]
+    image: thanhphong-web:local
+    build: .
+    restart: unless-stopped
+    command: ["npm", "run", "jobs:work"]
+    env_file: .env.local
+    environment: *app-environment
+    depends_on:
+      db:
+        condition: service_healthy
+volumes:
+  postgres-data:
+  media-data:
