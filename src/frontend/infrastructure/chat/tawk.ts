@@ -1,107 +1,37 @@
 import type { ChatGateway } from "@/frontend/application/ports";
 
-type TawkApi = {
-  onLoad?: () => void;
-  onBeforeLoad?: () => void;
-  onChatMinimized?: () => void;
-  showWidget?: () => void;
-  hideWidget?: () => void;
-  maximize?: () => void;
-  shutdown?: () => void;
-  start?: (options: { showWidget: boolean }) => void;
-  switchWidget?: (
-    widget: { propertyId: string; widgetId: string },
-    callback: (error?: unknown) => void,
-  ) => void;
-};
-type TawkWindow = Window & {
-  Tawk_API?: TawkApi;
-  Tawk_LoadStart?: Date;
-};
-
-const timeoutMs = 15000;
-let loading: Promise<TawkApi> | undefined;
-let activeLink = "";
-let generation = 0;
-let suspended = false;
-const browser = () => window as TawkWindow;
-
-function loadWidget(link: string): Promise<TawkApi> {
-  if (loading) return loading;
-  activeLink = link;
-  const [, , propertyId, widgetId] = new URL(link).pathname.split("/");
-  loading = new Promise<TawkApi>((resolve, reject) => {
-    const timer = window.setTimeout(
-      () => reject(new Error("Chat could not be loaded.")),
-      timeoutMs,
-    );
-    const api = (browser().Tawk_API ||= {});
-    api.onBeforeLoad = () => browser().Tawk_API?.hideWidget?.();
-    api.onChatMinimized = () => browser().Tawk_API?.hideWidget?.();
-    api.onLoad = () => {
-      window.clearTimeout(timer);
-      const ready = browser().Tawk_API;
-      if (!ready?.showWidget || !ready.maximize) {
-        reject(new Error("Chat is unavailable."));
-        return;
-      }
-      ready.hideWidget?.();
-      if (suspended) ready.shutdown?.();
-      resolve(ready);
-    };
-    browser().Tawk_LoadStart = new Date();
-    const script = document.createElement("script");
-    // Only IDs from the validated link are used; arbitrary script URLs/HTML
-    // from settings are never executed. No API key or visitor data is sent.
-    script.src = `https://embed.tawk.to/${propertyId}/${widgetId}`;
-    script.async = true;
-    script.crossOrigin = "anonymous";
-    script.id = "thanhphong-tawk-widget";
-    script.onerror = () => {
-      window.clearTimeout(timer);
-      reject(new Error("Chat could not be loaded."));
-    };
-    document.head.appendChild(script);
-  });
-  return loading;
-}
-
 export const tawkChatGateway: ChatGateway = {
-  async open(link) {
-    const current = ++generation;
-    suspended = false;
-    const api = await loadWidget(link);
-    if (current !== generation) return;
-    if (activeLink !== link) {
-      const [, , propertyId, widgetId] = new URL(link).pathname.split("/");
-      await new Promise<void>((resolve, reject) => {
-        if (!api.switchWidget) {
-          reject(new Error("Reload the page to use the updated chat."));
-          return;
-        }
-        const timer = window.setTimeout(
-          () => reject(new Error("Chat could not be switched.")),
-          timeoutMs,
-        );
-        api.switchWidget({ propertyId, widgetId }, (error) => {
-          window.clearTimeout(timer);
-          if (error) reject(new Error("Chat could not be switched."));
-          else {
-            activeLink = link;
-            resolve();
-          }
-        });
-      });
-    }
-    if (current !== generation) return;
-    api.start?.({ showWidget: false });
-    api.showWidget?.();
-    api.maximize?.();
-  },
-  hide() {
-    generation++;
-    suspended = true;
-    browser().Tawk_API?.hideWidget?.();
-    browser().Tawk_API?.shutdown?.();
+  embed(link) {
+    const [, , propertyId, widgetId] = new URL(link).pathname.split("/");
+    const containerId = `tawk_${propertyId}`;
+    // Both IDs are validated by the application. The vendor's script and
+    // branding stay inside this document, without a second website launcher.
+    return {
+      document: `<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+html,body{margin:0;width:100%;height:100%;background:#fff}
+body{overflow:auto}
+#${containerId}{width:100%;height:100%;min-height:0}
+#${containerId} iframe{max-width:100%}
+</style></head>
+<body><div id="${containerId}"></div>
+<script>
+var state="loading";
+function notify(type){state=type;window.parent.postMessage({type:type},window.origin)}
+window.addEventListener("message",function(event){
+  if(event.source===window.parent && event.origin===window.origin && event.data && event.data.type==="thanhphong:chat:probe" && state!=="loading") notify(state);
+});
+var Tawk_API={embedded:"${containerId}",onLoad:function(){notify("thanhphong:chat:ready")}},Tawk_LoadStart=new Date();
+var script=document.createElement("script");
+script.async=true;
+script.src="https://embed.tawk.to/${propertyId}/${widgetId}";
+script.charset="UTF-8";
+script.crossOrigin="anonymous";
+script.onerror=function(){notify("thanhphong:chat:error")};
+document.head.appendChild(script);
+</script></body></html>`,
+    };
   },
 };

@@ -5,16 +5,16 @@ import { createChatService } from "../../src/frontend/application/chat";
 
 const link = "https://tawk.to/chat/0123456789abcdef01234567/1testwidget";
 
-test("chat accepts only official direct links and validates before loading a script", async () => {
+test("chat accepts only official direct links and validates before embedding a script", () => {
   const opened: string[] = [];
   const service = createChatService({
-    async open(url) {
+    embed(url) {
       opened.push(url);
+      return { document: "embedded chat" };
     },
-    hide() {},
   });
-  await service.open(`  ${link}  `);
-  await service.open(`${link}/`);
+  service.embed(`  ${link}  `);
+  service.embed(`${link}/`);
   assert.deepEqual(opened, [link, `${link}/`]);
   for (const unsafe of [
     "javascript:alert(1)",
@@ -29,7 +29,7 @@ test("chat accepts only official direct links and validates before loading a scr
     "",
   ]) {
     assert.equal(tawkChatLinkSchema.safeParse(unsafe).success, false);
-    assert.throws(() => service.open(unsafe));
+    assert.throws(() => service.embed(unsafe));
   }
   assert.equal(opened.length, 2);
 });
