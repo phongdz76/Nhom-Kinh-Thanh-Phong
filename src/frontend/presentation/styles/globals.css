@@ -1316,34 +1316,90 @@ button:disabled {
   font-size: 11px;
   text-align: center;
 }
-.floating-consult {
+.floating-contact-actions {
   position: fixed;
   right: 23px;
-  bottom: 23px;
+  bottom: calc(23px + env(safe-area-inset-bottom, 0px));
   z-index: 30;
-  background: var(--teal);
-  color: white;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding: 12px 17px;
-  border-radius: 30px;
-  box-shadow: 0 3px 15px #19342e25;
-  font-size: 10px;
-  border: 3px solid #ffffffd9;
-  transition: background 0.2s;
+  gap: 16px;
+}
+.floating-consult,
+.floating-form {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 2px solid #ffffffed;
+  border-radius: 50%;
+  color: white;
+  box-shadow: 0 4px 18px #19342e30;
+  transition:
+    background 0.2s,
+    box-shadow 0.2s;
+}
+.floating-consult {
+  --contact-ring-color: #537c7b80;
+  background: var(--navy);
+  isolation: isolate;
+}
+.floating-form {
+  background: var(--teal);
 }
 .floating-consult:hover {
+  background: var(--teal);
+}
+.floating-form:hover {
   background: var(--navy);
+}
+.floating-contact-actions > :focus-visible {
+  outline: 2px solid var(--navy);
+  outline-offset: 4px;
+}
+.contact-action-label {
+  position: absolute;
+  right: calc(100% + 12px);
+  top: 50%;
+  width: max-content;
+  max-width: 210px;
+  padding: 7px 12px;
+  border-radius: 8px;
+  background: var(--navy);
+  color: white;
+  box-shadow: 0 4px 14px #19342e20;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.5;
+  text-align: left;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: translate(4px, -50%);
+  transition:
+    opacity 0.15s,
+    transform 0.15s,
+    visibility 0.15s;
+}
+.floating-contact-actions
+  > :is(:hover, :focus-visible)
+  > .contact-action-label {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(0, -50%);
 }
 .floating-consult:disabled {
   cursor: progress;
   opacity: 0.75;
 }
 .live-chat-error {
-  position: fixed;
-  right: 23px;
-  bottom: 90px;
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 16px);
   z-index: 40;
   width: min(320px, calc(100vw - 46px));
   padding: 22px;
@@ -2041,8 +2097,12 @@ textarea::placeholder {
 }
 .submit-button {
   width: 100%;
+  min-height: 52px;
   margin-top: 21px;
-  justify-content: space-between;
+  padding: 14px 22px;
+  border-radius: 12px;
+  justify-content: center;
+  gap: 10px;
 }
 .form-error {
   padding: 12px 15px;
@@ -3784,13 +3844,9 @@ textarea::placeholder {
     padding: 18px 0 75px;
     font-size: 10px;
   }
-  .floating-consult {
+  .floating-contact-actions {
     right: 15px;
-    bottom: 15px;
-    padding: 11px;
-  }
-  .floating-consult > span {
-    display: none;
+    bottom: calc(15px + env(safe-area-inset-bottom, 0px));
   }
   .breadcrumb {
     padding-top: 18px;
@@ -5200,10 +5256,7 @@ textarea::placeholder {
   line-height: 1.2;
 }
 .floating-zalo {
-  position: fixed;
-  right: 23px;
-  bottom: calc(88px + env(safe-area-inset-bottom, 0px));
-  z-index: 30;
+  position: relative;
   display: grid;
   place-items: center;
   width: 48px;
@@ -5216,21 +5269,27 @@ textarea::placeholder {
   box-shadow: 0 4px 18px #14489330;
   isolation: isolate;
 }
+.floating-consult::before,
+.floating-consult::after,
 .floating-zalo::before,
 .floating-zalo::after {
   content: "";
   position: absolute;
   inset: -3px;
-  border: 2px solid #0866ed80;
+  border: 2px solid var(--contact-ring-color, #0866ed80);
   border-radius: 50%;
   pointer-events: none;
   animation: zalo-wave 2.6s ease-out infinite;
 }
+.floating-consult::after,
 .floating-zalo::after {
   animation-delay: 1.3s;
 }
 .floating-zalo .zalo-wordmark {
   font-size: 16px;
+}
+.floating-consult > svg,
+.floating-zalo .zalo-wordmark {
   animation: zalo-glow 2.6s ease-in-out infinite;
 }
 @keyframes zalo-wave {
@@ -5253,14 +5312,19 @@ textarea::placeholder {
   }
 }
 @media (prefers-reduced-motion: reduce) {
+  .floating-consult::before,
+  .floating-consult::after,
+  .floating-consult > svg,
   .floating-zalo::before,
   .floating-zalo::after,
   .floating-zalo .zalo-wordmark {
     animation: none;
   }
+  .floating-consult::before,
   .floating-zalo::before {
     opacity: 0.25;
   }
+  .floating-consult::after,
   .floating-zalo::after {
     display: none;
   }
@@ -5337,12 +5401,6 @@ textarea::placeholder {
   color: #0866ed;
 }
 @media (max-width: 600px) {
-  .floating-zalo {
-    right: 15px;
-    bottom: calc(78px + env(safe-area-inset-bottom, 0px));
-    width: 44px;
-    height: 44px;
-  }
   .login-card {
     padding: 28px 22px;
   }
