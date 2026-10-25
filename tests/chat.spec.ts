@@ -40,28 +40,21 @@ test.afterAll(async () => {
   await owner?.dispose();
 });
 
-// Local SDK fixture: no visitor messages or test credentials reach tawk.to.
+// This script runs in the embedded frame. No test messages reach tawk.to.
 const sdk = `
-  const api = window.Tawk_API;
-  const chat = document.createElement('section');
-  chat.setAttribute('role', 'dialog');
-  chat.setAttribute('aria-label', 'Test live chat');
-  chat.style.cssText = 'position:fixed;right:20px;bottom:20px;z-index:9999;padding:24px;background:white;border:1px solid #ccc;';
-  const close = document.createElement('button');
-  close.textContent = 'Minimize test chat';
-  close.onclick = () => api.onChatMinimized?.();
-  chat.append(close);
-  chat.hidden = true;
-  document.body.append(chat);
-  api.hideWidget = () => { chat.hidden = true; };
-  api.showWidget = () => { chat.hidden = false; };
-  api.maximize = () => { chat.hidden = false; };
-  api.shutdown = () => { document.body.dataset.chatSuspended = 'true'; };
-  api.start = () => { document.body.dataset.chatSuspended = 'false'; };
-  queueMicrotask(() => { api.onBeforeLoad?.(); api.onLoad?.(); });
+  const api=window.Tawk_API;
+  const mount=document.getElementById(api.embedded);
+  if(!mount)throw new Error('Missing embedded widget target');
+  const input=document.createElement('textarea');
+  input.setAttribute('aria-label','Test message');
+  mount.append(input);
+  const branding=document.createElement('p');
+  branding.textContent='Powered by tawk.to';
+  mount.append(branding);
+  queueMicrotask(()=>api.onLoad());
 `;
 
-test("owner configures chat; widget loads on demand once, survives public navigation and suspends in admin", async ({
+test("owner configures embedded chat; the inside close button preserves drafts without reloading the widget", async ({
   page,
   context,
 }) => {
@@ -73,6 +66,7 @@ test("owner configures chat; widget loads on demand once, survives public naviga
     expect(route.request().url()).toBe(
       "https://embed.tawk.to/0123456789abcdef01234567/1testwidget",
     );
+    expect(route.request().frame().parentFrame()).not.toBeNull();
     return route.fulfill({ contentType: "application/javascript", body: sdk });
   });
   await page.goto("/admin?tab=settings");
@@ -80,64 +74,83 @@ test("owner configures chat; widget loads on demand once, survives public naviga
   await expect(input).toHaveValue(link);
   await input.fill("");
   await page.getByRole("button", { name: "Lưu thông tin" }).click();
-  await expect(input).toHaveValue("");
   await page.getByRole("link", { name: "Trở về website" }).click();
   await expect(
     page.getByRole("link", { name: "Gửi form tư vấn", exact: true }),
   ).toHaveAttribute("href", "/quotation");
+  await expect(page.locator(".floating-consult")).toHaveCount(0);
   expect(scripts).toBe(0);
   await page.goBack();
-  await expect(input).toBeVisible();
   await input.fill(link);
   await page.getByRole("button", { name: "Lưu thông tin" }).click();
   await expect
-    .poll(async () => {
-      const state = await (await owner.get("/api/admin/state")).json();
-      return state.settings.tawkDirectChatUrl;
-    })
+    .poll(
+      async () =>
+        (await (await owner.get("/api/admin/state")).json()).settings
+          .tawkDirectChatUrl,
+    )
     .toBe(link);
-  const invalid = await owner.patch("/api/admin/settings", {
-    data: { ...previous, tawkDirectChatUrl: "https://evil.example/chat" },
-  });
-  expect(invalid.status()).toBe(400);
+  expect(
+    (
+      await owner.patch("/api/admin/settings", {
+        data: { ...previous, tawkDirectChatUrl: "https://evil.example/chat" },
+      })
+    ).status(),
+  ).toBe(400);
   await page.getByRole("link", { name: "Trở về website" }).click();
   const trigger = page.getByRole("button", {
     name: "Chat tư vấn",
     exact: true,
   });
   await expect(trigger).toBeVisible();
+  await expect(page.locator(".live-chat-frame")).toHaveCount(0);
   expect(scripts).toBe(0);
   await trigger.click();
-  const chat = page.getByRole("dialog", { name: "Test live chat" });
+  const chat = page.getByRole("dialog", { name: "Chat tư vấn", exact: true });
   await expect(chat).toBeVisible();
-  expect(scripts).toBe(1);
-  await page.getByRole("button", { name: "Minimize test chat" }).click();
+  await expect(chat.locator(".live-chat-body")).toHaveAttribute(
+    "aria-busy",
+    "false",
+  );
+  const embedded = page.frameLocator(".live-chat-frame");
+  await expect(embedded.getByText("Powered by tawk.to")).toBeVisible();
+  await embedded
+    .getByRole("textbox", { name: "Test message" })
+    .fill("Unsent draft");
+  const close = chat.getByRole("button", { name: "Đóng chat tư vấn" });
+  expect(
+    await close.evaluate((element) => !!element.closest(".live-chat-header")),
+  ).toBe(true);
+  await close.click();
   await expect(chat).toBeHidden();
+  await expect(trigger).toBeFocused();
   await trigger.click();
-  await expect(chat).toBeVisible();
+  await expect(embedded.getByRole("textbox")).toHaveValue("Unsent draft");
   expect(scripts).toBe(1);
   await page
     .locator(".desktop-nav")
     .getByRole("link", { name: "Giới thiệu" })
     .click();
-  await expect(page).toHaveURL(/\/about$/);
   await expect(chat).toBeVisible();
+  await expect(embedded.getByRole("textbox")).toHaveValue("Unsent draft");
   await page.goBack();
   await page.goBack();
   await expect(input).toBeVisible();
-  await expect(chat).toBeHidden();
-  await expect(page.locator("body")).toHaveAttribute(
-    "data-chat-suspended",
-    "true",
-  );
+  await expect(page.locator(".live-chat-frame")).toHaveCount(0);
   await expect(page.locator(".floating-consult")).toHaveCount(0);
   await page.getByRole("link", { name: "Trở về website" }).click();
   await trigger.click();
-  await expect(chat).toBeVisible();
-  expect(scripts).toBe(1);
+  await expect(chat.locator(".live-chat-body")).toHaveAttribute(
+    "aria-busy",
+    "false",
+  );
+  expect(scripts).toBe(2);
+  await page.getByRole("button", { name: "Đóng chat tư vấn" }).focus();
+  await page.keyboard.press("Escape");
+  await expect(chat).toBeHidden();
 });
 
-test("a slow widget never opens over admin and can be reopened after returning to the website", async ({
+test("slow or forged readiness messages cannot open chat over admin", async ({
   page,
   context,
 }) => {
@@ -148,7 +161,9 @@ test("a slow widget never opens over admin and can be reopened after returning t
   });
   await page.route("https://embed.tawk.to/**", async (route) => {
     await pending;
-    await route.fulfill({ contentType: "application/javascript", body: sdk });
+    await route
+      .fulfill({ contentType: "application/javascript", body: sdk })
+      .catch(() => {});
   });
   try {
     await page.goto("/admin?tab=settings");
@@ -156,53 +171,61 @@ test("a slow widget never opens over admin and can be reopened after returning t
     await page
       .getByRole("button", { name: "Chat tư vấn", exact: true })
       .click();
-    await expect(
-      page.getByRole("button", { name: "Đang mở chat" }),
-    ).toBeDisabled();
+    const body = page.locator(".live-chat-body");
+    await expect(body).toHaveAttribute("aria-busy", "true");
+    await page.evaluate(() =>
+      window.postMessage(
+        { type: "thanhphong:chat:ready" },
+        window.location.origin,
+      ),
+    );
+    await expect(body).toHaveAttribute("aria-busy", "true");
     await page.goBack();
     await expect(
       page.getByLabel("Chat trực tiếp tawk.to", { exact: true }),
     ).toBeVisible();
     release();
-    await expect(page.locator("body")).toHaveAttribute(
-      "data-chat-suspended",
-      "true",
-    );
-    const chat = page.getByRole("dialog", { name: "Test live chat" });
-    await expect(chat).toBeHidden();
+    await expect(page.locator(".live-chat-panel")).toHaveCount(0);
     await page.getByRole("link", { name: "Trở về website" }).click();
     await page
       .getByRole("button", { name: "Chat tư vấn", exact: true })
       .click();
-    await expect(chat).toBeVisible();
+    await expect(page.locator(".live-chat-body")).toHaveAttribute(
+      "aria-busy",
+      "false",
+    );
   } finally {
     release();
   }
 });
 
-test("blocked widget offers direct chat and the consultation form on mobile", async ({
+test("blocked chat remains closable inside a panel that fits small mobile screens", async ({
   page,
 }) => {
-  await page.setViewportSize({ width: 390, height: 667 });
+  await page.setViewportSize({ width: 320, height: 568 });
   await page.route("https://embed.tawk.to/**", (route) => route.abort());
   await page.goto("/contact");
   await page.getByRole("button", { name: "Chat tư vấn", exact: true }).click();
-  const error = page.locator(".live-chat-error[role='alert']");
-  await expect(error).toContainText("Chưa mở được khung chat");
-  const direct = error.getByRole("link", { name: "Mở chat trực tiếp" });
-  await expect(direct).toHaveAttribute("href", link);
-  await expect(direct).toHaveAttribute("rel", "noopener noreferrer");
+  const chat = page.getByRole("dialog", { name: "Chat tư vấn", exact: true });
+  await expect(chat.getByRole("alert")).toContainText(
+    "Chưa kết nối được khung chat",
+  );
   await expect(
-    error.getByRole("link", { name: "Gửi yêu cầu tư vấn" }),
+    chat.getByRole("link", { name: "Gửi yêu cầu tư vấn" }),
   ).toHaveAttribute("href", "/quotation");
   expect(
-    await error.evaluate((element) => {
+    await chat.evaluate((element) => {
       const box = element.getBoundingClientRect();
       return (
-        box.left >= 0 && box.right <= innerWidth && box.bottom <= innerHeight
+        box.left >= 0 &&
+        box.right <= innerWidth &&
+        box.top >= 0 &&
+        box.bottom <= innerHeight
       );
     }),
   ).toBe(true);
-  await page.getByRole("button", { name: "Đóng thông báo chat" }).click();
-  await expect(error).toHaveCount(0);
+  const close = chat.getByRole("button", { name: "Đóng chat tư vấn" });
+  await expect(close).toBeVisible();
+  await close.click();
+  await expect(chat).toBeHidden();
 });

@@ -3,9 +3,8 @@ import type { ChatGateway } from "./ports";
 
 export function createChatService(gateway: ChatGateway) {
   return {
-    open(directChatUrl: string) {
-      return gateway.open(tawkChatLinkSchema.parse(directChatUrl));
+    embed(directChatUrl: string) {
+      return gateway.embed(tawkChatLinkSchema.parse(directChatUrl));
     },
-    hide: () => gateway.hide(),
   };
 }

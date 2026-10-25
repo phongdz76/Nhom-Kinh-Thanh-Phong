@@ -51,8 +51,7 @@ export interface AuthGateway {
   }): Promise<{ ok: boolean }>;
 }
 export interface ChatGateway {
-  open(directChatUrl: string): Promise<void>;
-  hide(): void;
+  embed(directChatUrl: string): { document: string };
 }
 export interface EstimateGateway {
   list(): Promise<{ estimates: EstimateSummary[]; totalDocs: number }>;
