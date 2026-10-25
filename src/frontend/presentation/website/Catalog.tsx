@@ -1,84 +1,30 @@
 "use client";
-import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { CATALOG_OPENINGS } from "@/frontend/application/catalog";
+import type { CatalogFilters } from "@/frontend/application/catalog";
+import { useCatalog } from "@/frontend/presentation/hooks/useCatalog";
+import Pagination from "@/frontend/presentation/shared/Pagination";
 import { useSite } from "@/frontend/presentation/shared/SiteProvider";
 import Icon from "@/frontend/presentation/shared/Icon";
 import ProductCard from "@/frontend/presentation/website/ProductCard";
 import { EmptyState } from "@/frontend/presentation/shared/Shared";
-const normalize = (value: string) =>
-  value
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/đ/g, "d")
-    .toLowerCase();
 export default function Catalog() {
-  const params = useSearchParams();
   const { publishedProducts: products, publicCategories: categories } =
     useSite();
-  const [category, setCategory] = useState("all");
-  const [query, setQuery] = useState("");
-  const [opening, setOpening] = useState("all");
-  const [sort, setSort] = useState("featured");
-  const requestedCategory = params.get("category");
-  const urlCategory = categories.some((item) => item.id === requestedCategory)
-    ? requestedCategory || "all"
-    : "all";
-  useEffect(() => {
-    setCategory(urlCategory);
-    setQuery(params.get("q") || "");
-    if (
-      params.get("focus") === "search" ||
-      (typeof window !== "undefined" &&
-        window.location.hash === "#catalog-search")
-    ) {
-      const timer = setTimeout(() => {
-        const input = document.getElementById(
-          "catalog-search-input",
-        ) as HTMLInputElement | null;
-        if (input) {
-          input.scrollIntoView({ behavior: "smooth", block: "center" });
-          input.focus();
-        }
-      }, 150);
-      return () => clearTimeout(timer);
-    }
-  }, [params, urlCategory]);
-  function changeCategory(value: string) {
-    setCategory(value);
-    const url = new URL(window.location.href);
-    if (value === "all") url.searchParams.delete("category");
-    else url.searchParams.set("category", value);
-    if (query) url.searchParams.set("q", query);
-    else url.searchParams.delete("q");
-    window.history.replaceState(null, "", url);
-  }
-  function clearQuery() {
-    setQuery("");
-    const url = new URL(window.location.href);
-    url.searchParams.delete("q");
-    window.history.replaceState(null, "", url);
-    const input = document.getElementById(
-      "catalog-search-input",
-    ) as HTMLInputElement | null;
-    input?.focus();
-  }
+  const {
+    filters: { category, query, opening, sort },
+    result,
+    resultsRef,
+    changeCategory,
+    changeQuery,
+    changeOpening,
+    changeSort,
+    clearQuery,
+    clearFilters,
+    changePage,
+    hrefForPage,
+  } = useCatalog(products, categories);
   const published = products.filter((item) => item.status === "published");
-  const filtered = published
-    .filter(
-      (item) =>
-        (category === "all" || item.category === category) &&
-        normalize(`${item.name} ${item.code} ${item.summary}`).includes(
-          normalize(query),
-        ) &&
-        (opening === "all" || item.opening === opening),
-    )
-    .sort((a, b) =>
-      sort === "name"
-        ? a.name.localeCompare(b.name, "vi")
-        : Number(b.featured) - Number(a.featured),
-    );
   return (
     <div className="container catalog-layout">
       <aside className="catalog-sidebar">
@@ -120,7 +66,8 @@ export default function Catalog() {
               aria-label="Tìm kiếm sản phẩm"
               placeholder="Tìm theo tên, mã sản phẩm..."
               value={query}
-              onChange={(event) => setQuery(event.target.value)}
+              maxLength={100}
+              onChange={(event) => changeQuery(event.target.value)}
             />
             {query && (
               <button
@@ -138,52 +85,78 @@ export default function Catalog() {
             <select
               aria-label="Lọc kiểu mở"
               value={opening}
-              onChange={(event) => setOpening(event.target.value)}
+              onChange={(event) =>
+                changeOpening(event.target.value as CatalogFilters["opening"])
+              }
             >
               <option value="all">Tất cả kiểu mở</option>
-              <option>Mở lùa</option>
-              <option>Mở quay</option>
-              <option>Cố định</option>
-              <option>Vách cố định</option>
+              {CATALOG_OPENINGS.map((value) => (
+                <option key={value}>{value}</option>
+              ))}
             </select>
           </label>
         </div>
         <div className="catalog-result">
           <p>
-            <strong>{filtered.length}</strong> mẫu sản phẩm{" "}
+            <strong>{result.total}</strong> mẫu sản phẩm{" "}
             <span>· Hình ảnh tham khảo</span>
           </p>
           <select
             value={sort}
-            onChange={(event) => setSort(event.target.value)}
+            onChange={(event) =>
+              changeSort(event.target.value as CatalogFilters["sort"])
+            }
             aria-label="Sắp xếp sản phẩm"
           >
             <option value="featured">Nổi bật trước</option>
             <option value="name">Tên A–Z</option>
           </select>
         </div>
-        <div className="product-grid catalog-grid">
-          {filtered.map((product) => (
+        <div
+          className="product-grid catalog-grid"
+          id="catalog-products"
+          ref={resultsRef}
+          tabIndex={-1}
+          role="region"
+          aria-label="Các mẫu sản phẩm"
+        >
+          {result.items.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
-        {filtered.length === 0 && (
+        <div className="catalog-pagination">
+          <p
+            className="catalog-page-summary"
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            {result.total > 0 ? (
+              <>
+                Đang hiển thị{" "}
+                <strong>
+                  {result.start}–{result.end}
+                </strong>{" "}
+                trong tổng số <strong>{result.total}</strong> mẫu
+              </>
+            ) : (
+              "Không có sản phẩm phù hợp"
+            )}
+          </p>
+          <Pagination
+            page={result.page}
+            totalPages={result.totalPages}
+            controls="catalog-products"
+            hrefForPage={hrefForPage}
+            onPageChange={changePage}
+          />
+        </div>
+        {result.total === 0 && (
           <EmptyState
             title="Chưa tìm thấy mẫu phù hợp"
             text="Thử một từ khóa hoặc nhóm sản phẩm khác."
           >
-            <button
-              className="button button-outline"
-              onClick={() => {
-                setCategory("all");
-                setQuery("");
-                setOpening("all");
-                const url = new URL(window.location.href);
-                url.searchParams.delete("category");
-                url.searchParams.delete("q");
-                window.history.replaceState(null, "", url);
-              }}
-            >
+            <button className="button button-outline" onClick={clearFilters}>
               Xóa bộ lọc
             </button>
           </EmptyState>
