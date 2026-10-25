@@ -13,40 +13,33 @@ export default function LiveChat() {
 
   useEffect(() => () => chatService.hide(), [link]);
 
-  if (!link)
-    return (
-      <Link
-        href="/quotation"
-        className="floating-consult"
-        aria-label="Yêu cầu tư vấn"
-      >
-        <Icon name="message" size={22} />
-        <span>Tư vấn cho bạn</span>
-      </Link>
-    );
-
   return (
     <>
-      <button
-        type="button"
-        className="floating-consult"
-        aria-label={status === "loading" ? "Đang mở chat" : "Chat tư vấn"}
-        aria-busy={status === "loading"}
-        disabled={status === "loading"}
-        onClick={async () => {
-          setStatus("loading");
-          try {
-            await chatService.open(link);
-            setStatus("idle");
-          } catch {
-            setStatus("error");
-          }
-        }}
-      >
-        <Icon name="message" size={22} />
-        <span>{status === "loading" ? "Đang mở chat…" : "Chat tư vấn"}</span>
-      </button>
-      {status === "error" && (
+      {link && (
+        <button
+          type="button"
+          className="floating-consult"
+          aria-label={status === "loading" ? "Đang mở chat" : "Chat tư vấn"}
+          aria-haspopup="dialog"
+          aria-busy={status === "loading"}
+          disabled={status === "loading"}
+          onClick={async () => {
+            setStatus("loading");
+            try {
+              await chatService.open(link);
+              setStatus("idle");
+            } catch {
+              setStatus("error");
+            }
+          }}
+        >
+          <Icon name="message" size={24} strokeWidth={1.8} />
+          <span className="contact-action-label" aria-hidden="true">
+            {status === "loading" ? "Đang mở chat…" : "Chat trực tiếp"}
+          </span>
+        </button>
+      )}
+      {link && status === "error" && (
         <div className="live-chat-error" role="alert">
           <button
             type="button"

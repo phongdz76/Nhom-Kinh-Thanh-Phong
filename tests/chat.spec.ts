@@ -83,7 +83,7 @@ test("owner configures chat; widget loads on demand once, survives public naviga
   await expect(input).toHaveValue("");
   await page.getByRole("link", { name: "Trở về website" }).click();
   await expect(
-    page.getByRole("link", { name: "Yêu cầu tư vấn", exact: true }),
+    page.getByRole("link", { name: "Gửi form tư vấn", exact: true }),
   ).toHaveAttribute("href", "/quotation");
   expect(scripts).toBe(0);
   await page.goBack();

@@ -125,6 +125,11 @@ export default function ZaloContact({ inline = false }) {
       >
         <span className="zalo-wordmark">Zalo</span>
         {inline && <span>Quét QR kết bạn Zalo</span>}
+        {!inline && (
+          <span className="contact-action-label" aria-hidden="true">
+            Nhắn qua Zalo
+          </span>
+        )}
       </button>
       {open && (
         <ZaloDialog

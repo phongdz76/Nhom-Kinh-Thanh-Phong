@@ -211,9 +211,10 @@ export default function ConsultationForm() {
         type="submit"
         className="button button-primary submit-button"
         disabled={saving}
+        aria-busy={saving}
       >
-        {saving ? "Đang gửi..." : "Gửi yêu cầu tư vấn"}
-        <Icon name="diagonal" size={18} />
+        <Icon name="file" size={20} />
+        <span>{saving ? "Đang gửi..." : "Gửi yêu cầu tư vấn"}</span>
       </button>
     </form>
   );
