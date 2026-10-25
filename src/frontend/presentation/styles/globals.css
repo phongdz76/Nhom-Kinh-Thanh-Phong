@@ -1416,17 +1416,28 @@ button:disabled {
 }
 .live-chat-header {
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   gap: 12px;
   padding: 16px;
   background: var(--navy);
   color: white;
 }
+.live-chat-heading {
+  min-width: 0;
+}
 .live-chat-header h2 {
   margin: 0;
+  color: #fff;
   font-size: 15px;
   font-weight: 600;
   line-height: 1.5;
+}
+.live-chat-heading h2,
+.live-chat-heading p {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .live-chat-header p {
   margin: 3px 0 0;
