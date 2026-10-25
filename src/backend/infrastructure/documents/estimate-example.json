@@ -1,0 +1,272 @@
+{
+  "document": {
+    "code": "BG-MAU-HIEPNHAT",
+    "date": "2026-10-24",
+    "title": "BẢNG BÁO GIÁ NHÔM KÍNH",
+    "companyName": "CỬA HÀNG NHÔM KÍNH THANH PHONG",
+    "companyAddress": "387/57 đường Bình Thành - KP2 - P.Bình Hưng Hòa B, Q.Bình Tân",
+    "companyPhone": "0903805360 - 0936142447",
+    "customerName": "Anh Phước",
+    "projectAddress": "58 Hiệp Nhất, Tân Bình",
+    "signatory": "NGUYỄN VĂN CƯỜNG",
+    "notes": "Đơn giá và phạm vi thi công theo nội dung các hạng mục bên trên.",
+    "payments": [30, 50, 20],
+    "lines": [
+      {
+        "id": "example-6",
+        "description": "Cửa đi nhôm xingfa Việt Nam dày 1 ly 8 \nkính 8 ly cường lực phụ kiện kim long (loại 2) từ lầu lửng => lầu 3 (cửa phòng)",
+        "unit": "m2",
+        "measurement": "dimensions",
+        "width": 910,
+        "height": 2150,
+        "quantity": 4,
+        "volume": 0,
+        "unitPrice": 2000000,
+        "agreedAmount": null
+      },
+      {
+        "id": "example-7",
+        "description": "Cửa WC từ lầu lửng => lầu 3",
+        "unit": "m2",
+        "measurement": "dimensions",
+        "width": 700,
+        "height": 2150,
+        "quantity": 8,
+        "volume": 0,
+        "unitPrice": 2000000,
+        "agreedAmount": null
+      },
+      {
+        "id": "example-8",
+        "description": "Cửa sổ nhôm dày 1 ly 4 mở từ lầu lửng => lầu 3",
+        "unit": "m2",
+        "measurement": "dimensions",
+        "width": 1600,
+        "height": 1300,
+        "quantity": 4,
+        "volume": 0,
+        "unitPrice": 1800000,
+        "agreedAmount": null
+      },
+      {
+        "id": "example-9",
+        "description": "Cửa sổ",
+        "unit": "m2",
+        "measurement": "dimensions",
+        "width": 600,
+        "height": 1300,
+        "quantity": 8,
+        "volume": 0,
+        "unitPrice": 1800000,
+        "agreedAmount": null
+      },
+      {
+        "id": "example-10",
+        "description": "Cửa đi sân thượng",
+        "unit": "m2",
+        "measurement": "dimensions",
+        "width": 910,
+        "height": 2150,
+        "quantity": 3,
+        "volume": 0,
+        "unitPrice": 2000000,
+        "agreedAmount": null
+      },
+      {
+        "id": "example-11",
+        "description": "Cửa WC sân thượng",
+        "unit": "m2",
+        "measurement": "dimensions",
+        "width": 700,
+        "height": 2150,
+        "quantity": 1,
+        "volume": 0,
+        "unitPrice": 2000000,
+        "agreedAmount": null
+      },
+      {
+        "id": "example-12",
+        "description": "Cửa sổ sân thượng",
+        "unit": "bo",
+        "measurement": "dimensions",
+        "width": 350,
+        "height": 600,
+        "quantity": 1,
+        "volume": 0,
+        "unitPrice": 1000000,
+        "agreedAmount": null
+      },
+      {
+        "id": "example-13",
+        "description": "Cửa sổ sân thượng",
+        "unit": "m2",
+        "measurement": "dimensions",
+        "width": 1200,
+        "height": 1300,
+        "quantity": 1,
+        "volume": 0,
+        "unitPrice": 1800000,
+        "agreedAmount": null
+      },
+      {
+        "id": "example-14",
+        "description": "Ô Fit (ô cố định) từ lầu 1 => lầu 3",
+        "unit": "m2",
+        "measurement": "dimensions",
+        "width": 1700,
+        "height": 3740,
+        "quantity": 3,
+        "volume": 0,
+        "unitPrice": 1200000,
+        "agreedAmount": null
+      },
+      {
+        "id": "example-15",
+        "description": "Cửa đi ra ban công  từ lầu 1 => lầu 3",
+        "unit": "m2",
+        "measurement": "dimensions",
+        "width": 1000,
+        "height": 2600,
+        "quantity": 3,
+        "volume": 0,
+        "unitPrice": 2000000,
+        "agreedAmount": null
+      },
+      {
+        "id": "example-16",
+        "description": "ô Fit lửng (ô cố định)",
+        "unit": "m2",
+        "measurement": "dimensions",
+        "width": 1400,
+        "height": 4080,
+        "quantity": 1,
+        "volume": 0,
+        "unitPrice": 1200000,
+        "agreedAmount": null
+      },
+      {
+        "id": "example-17",
+        "description": "Cửa đi 4 cánh trệt (trước)",
+        "unit": "m2",
+        "measurement": "dimensions",
+        "width": 2500,
+        "height": 3020,
+        "quantity": 1,
+        "volume": 0,
+        "unitPrice": 2000000,
+        "agreedAmount": null
+      },
+      {
+        "id": "example-18",
+        "description": "Cửa đi 4 cánh trệt (sau)",
+        "unit": "m2",
+        "measurement": "dimensions",
+        "width": 2350,
+        "height": 3160,
+        "quantity": 1,
+        "volume": 0,
+        "unitPrice": 2000000,
+        "agreedAmount": null
+      },
+      {
+        "id": "example-19",
+        "description": "Cửa đi trệt",
+        "unit": "m2",
+        "measurement": "dimensions",
+        "width": 910,
+        "height": 2150,
+        "quantity": 1,
+        "volume": 0,
+        "unitPrice": 2000000,
+        "agreedAmount": null
+      }
+    ]
+  },
+  "audit": [
+    {
+      "index": 1,
+      "sourceRow": 6,
+      "originalVolume": 7826.0,
+      "originalAmount": 15625000
+    },
+    {
+      "index": 2,
+      "sourceRow": 7,
+      "originalVolume": 12040.0,
+      "originalAmount": 24080000
+    },
+    {
+      "index": 3,
+      "sourceRow": 8,
+      "originalVolume": 8320.0,
+      "originalAmount": 14976000
+    },
+    {
+      "index": 4,
+      "sourceRow": 9,
+      "originalVolume": 6240.0,
+      "originalAmount": 11232000
+    },
+    {
+      "index": 5,
+      "sourceRow": 10,
+      "originalVolume": 5805.0,
+      "originalAmount": 11610000
+    },
+    {
+      "index": 6,
+      "sourceRow": 11,
+      "originalVolume": 1505.0,
+      "originalAmount": 3000000
+    },
+    {
+      "index": 7,
+      "sourceRow": 12,
+      "originalVolume": null,
+      "originalAmount": 1000000
+    },
+    {
+      "index": 8,
+      "sourceRow": 13,
+      "originalVolume": 1560.0,
+      "originalAmount": 2800000
+    },
+    {
+      "index": 9,
+      "sourceRow": 14,
+      "originalVolume": 19070.0,
+      "originalAmount": 22880000
+    },
+    {
+      "index": 10,
+      "sourceRow": 15,
+      "originalVolume": 7800.0,
+      "originalAmount": 15600000
+    },
+    {
+      "index": 11,
+      "sourceRow": 16,
+      "originalVolume": 5712.0,
+      "originalAmount": 6854000
+    },
+    {
+      "index": 12,
+      "sourceRow": 17,
+      "originalVolume": 7500.0,
+      "originalAmount": 15100000
+    },
+    {
+      "index": 13,
+      "sourceRow": 18,
+      "originalVolume": 7426.0,
+      "originalAmount": 14852000
+    },
+    {
+      "index": 14,
+      "sourceRow": 19,
+      "originalVolume": 1956.0,
+      "originalAmount": 3913000
+    }
+  ],
+  "originalTotal": 163522000
+}
