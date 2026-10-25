@@ -89,7 +89,7 @@ function ChatWidget({ link, name }: { link: string; name: string }) {
             <span className="live-chat-symbol">
               <Icon name="message" size={24} />
             </span>
-            <div>
+            <div className="live-chat-heading">
               <h2 id="live-chat-title">Chat tư vấn</h2>
               <p>{name}</p>
             </div>
