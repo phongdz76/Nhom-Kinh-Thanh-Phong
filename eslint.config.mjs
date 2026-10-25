@@ -23,7 +23,6 @@ export default defineConfig([
       "src/frontend/presentation/admin/AdminDashboard.tsx",
       "src/frontend/presentation/hooks/useEstimateEditor.ts",
       "src/frontend/presentation/hooks/useSiteState.ts",
-      "src/frontend/presentation/website/Catalog.tsx",
       "src/frontend/presentation/website/ConsultationForm.tsx",
       "src/frontend/presentation/website/Header.tsx",
       "src/frontend/presentation/website/ZaloContact.tsx",
