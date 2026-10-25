@@ -196,7 +196,9 @@ test("Zalo settings persist, original and generated QR codes scan, and visitors 
     await page
       .getByRole("button", { name: "Lưu thông tin", exact: true })
       .click();
-    await expect(page.getByRole("status")).toContainText("Đã cập nhật");
+    await expect(page.locator(".toast[role='status']")).toContainText(
+      "Đã cập nhật",
+    );
     await page.reload();
     await expect(page.locator(".zalo-settings-preview img")).toHaveAttribute(
       "src",
@@ -215,7 +217,9 @@ test("Zalo settings persist, original and generated QR codes scan, and visitors 
     await page
       .getByRole("button", { name: "Lưu thông tin", exact: true })
       .click();
-    await expect(page.getByRole("status")).toContainText("Đã cập nhật");
+    await expect(page.locator(".toast[role='status']")).toContainText(
+      "Đã cập nhật",
+    );
     await publicPage.reload();
     await trigger.click();
     await expect(dialog.locator("img")).toHaveAttribute(

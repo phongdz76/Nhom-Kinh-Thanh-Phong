@@ -1249,6 +1249,23 @@ function SettingsForm({
               Bấm “Lưu thông tin” để cập nhật khung Zalo trên website.
             </p>
           </div>
+          <div className="full-width">
+            <label htmlFor="settings-tawk">Chat trực tiếp tawk.to</label>
+            <input
+              id="settings-tawk"
+              name="tawkDirectChatUrl"
+              type="url"
+              defaultValue={settings.tawkDirectChatUrl}
+              placeholder="https://tawk.to/chat/PropertyID/WidgetID"
+              maxLength={250}
+              aria-describedby="settings-tawk-help"
+            />
+            <p className="field-help" id="settings-tawk-help">
+              Trong tawk.to, vào Administration → Channels → Chat Widget và sao
+              chép Direct Chat Link. Khách bấm “Chat tư vấn” để nhắn với bạn. Để
+              trống để dùng form tư vấn.
+            </p>
+          </div>
           <label className="full-width">
             Địa chỉ cơ sở
             <textarea

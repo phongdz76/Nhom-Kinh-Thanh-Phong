@@ -50,6 +50,10 @@ export interface AuthGateway {
     newPassword: string;
   }): Promise<{ ok: boolean }>;
 }
+export interface ChatGateway {
+  open(directChatUrl: string): Promise<void>;
+  hide(): void;
+}
 export interface EstimateGateway {
   list(): Promise<{ estimates: EstimateSummary[]; totalDocs: number }>;
   get(id: string): Promise<EstimateRecord>;

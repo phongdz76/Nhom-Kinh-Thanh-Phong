@@ -114,6 +114,7 @@ export function settingsDTO(value: unknown): Settings {
     email: text(doc.email),
     zalo: text(doc.zalo),
     zaloQr: text(doc.zaloQr),
+    tawkDirectChatUrl: text(doc.tawkDirectChatUrl),
     address: text(doc.address),
     mapUrl: text(doc.mapUrl),
     mapEmbedUrl: text(doc.mapEmbedUrl),

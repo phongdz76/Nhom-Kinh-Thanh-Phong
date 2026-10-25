@@ -279,6 +279,7 @@ export const siteSettings: GlobalConfig = {
     text("phone"),
     text("zalo"),
     text("zaloQr"),
+    text("tawkDirectChatUrl"),
     text("email"),
     { name: "address", type: "textarea" },
     text("mapUrl"),
