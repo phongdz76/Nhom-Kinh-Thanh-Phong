@@ -3,8 +3,7 @@ import type { SiteProviderProps } from "./SiteProvider";
 import { usePathname } from "next/navigation";
 import Header from "@/frontend/presentation/website/Header";
 import Footer from "@/frontend/presentation/website/Footer";
-import Icon from "@/frontend/presentation/shared/Icon";
-import Link from "next/link";
+import LiveChat from "@/frontend/presentation/website/LiveChat";
 import { SiteProvider } from "@/frontend/presentation/shared/SiteProvider";
 import ZaloContact from "@/frontend/presentation/website/ZaloContact";
 import { HomeNavigationProvider } from "@/frontend/presentation/shared/BrandLink";
@@ -29,14 +28,7 @@ export default function SiteShell({
             <main id="main-content">{children}</main>
             <Footer />
             <ZaloContact />
-            <Link
-              href="/quotation"
-              className="floating-consult"
-              aria-label="Yêu cầu tư vấn"
-            >
-              <Icon name="message" size={22} />
-              <span>Tư vấn cho bạn</span>
-            </Link>
+            <LiveChat />
           </>
         )}
       </SiteProvider>

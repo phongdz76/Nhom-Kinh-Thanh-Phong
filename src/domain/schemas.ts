@@ -17,6 +17,14 @@ const slug = z
 export const loginSchema = z
   .object({ email: z.email().max(150), password: z.string().min(1).max(200) })
   .strict();
+export const tawkChatLinkSchema = z
+  .string()
+  .trim()
+  .max(250)
+  .regex(
+    /^https:\/\/tawk\.to\/chat\/[a-f0-9]{24}\/[a-zA-Z0-9]+\/?$/,
+    "Dán Direct Chat Link từ tawk.to, dạng https://tawk.to/chat/PropertyID/WidgetID.",
+  );
 export const productSchema = z
   .object({
     id: line(80).optional(),
@@ -65,6 +73,7 @@ export const settingsSchema = z
     zaloQr: z
       .union([z.literal(""), z.literal("/images/zalo-contact-qr.svg"), asset])
       .default(""),
+    tawkDirectChatUrl: z.union([z.literal(""), tawkChatLinkSchema]).default(""),
     address: line(400),
     mapUrl: z
       .string()

@@ -22,6 +22,13 @@ export default function PrivacyPage() {
           hiểu là đăng ký nhận quảng cáo. Khi kênh thông báo được cấu hình, cơ
           sở nhận mã yêu cầu và liên kết vào quản trị để xem chi tiết.
         </p>
+        <h2>Trò chuyện trực tiếp</h2>
+        <p>
+          Khi kênh chat được bật, khung tawk.to chỉ tải sau khi bạn bấm “Chat tư
+          vấn”. Nội dung trò chuyện và thông tin bạn chủ động cung cấp được xử
+          lý trên nền tảng tawk.to để người phụ trách trả lời. Bạn cũng có thể
+          sử dụng form tư vấn hoặc thông tin liên hệ trên website.
+        </p>
         <h2>Truy cập và bảo vệ thông tin</h2>
         <p>
           Danh sách khách hàng không được công bố. Phần quản trị yêu cầu đăng
