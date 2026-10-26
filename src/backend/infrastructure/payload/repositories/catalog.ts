@@ -5,6 +5,7 @@ import type { CatalogRepository } from "@/backend/application/ports";
 import { ApplicationError } from "@/backend/application/errors";
 import "server-only";
 import { cms } from "@/backend/infrastructure/payload/client";
+import { hostedChatOrigin } from "@/backend/infrastructure/chat/config";
 import {
   categoryDTO,
   productDTO,
@@ -53,6 +54,7 @@ async function publicSite() {
     payload.findGlobal({ slug: "site-settings", overrideAccess: false }),
   ]);
   return {
+    chatFrameOrigin: hostedChatOrigin(process.env) || undefined,
     categories: categories.docs.map(categoryDTO),
     products: products.docs.map(productDTO),
     articles: posts.docs.map(postDTO),
@@ -154,6 +156,7 @@ async function adminState(user: User) {
       }),
     ]);
   return {
+    chatFrameOrigin: hostedChatOrigin(process.env) || undefined,
     products: products.docs.map(productDTO),
     categories: categories.docs.map(categoryDTO),
     articles: posts.docs.map(postDTO),

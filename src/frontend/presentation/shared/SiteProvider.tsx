@@ -5,12 +5,17 @@ import {
   type SiteInitialState,
   type SiteState,
 } from "@/frontend/presentation/hooks/useSiteState";
-import { siteService } from "@/frontend/composition/services";
+import { sessionEvents, siteService } from "@/frontend/composition/services";
 const SiteContext = createContext<SiteState | null>(null);
 export type SiteProviderProps = SiteInitialState & { children: ReactNode };
 export function SiteProvider({ children, ...initial }: SiteProviderProps) {
-  const value = useSiteState(initial, siteService);
-  return <SiteContext.Provider value={value}>{children}</SiteContext.Provider>;
+  const value = useSiteState(initial, siteService, sessionEvents);
+  const identity = `${value.user?.id || "guest"}:${value.user?.role || ""}`;
+  return (
+    <SiteContext.Provider key={identity} value={value}>
+      {children}
+    </SiteContext.Provider>
+  );
 }
 export function useSite() {
   const value = useContext(SiteContext);

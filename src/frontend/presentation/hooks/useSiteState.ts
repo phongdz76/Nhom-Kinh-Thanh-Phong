@@ -1,6 +1,5 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type {
   AdminState,
   Category,
@@ -19,68 +18,140 @@ import type {
 } from "@/domain/models";
 import { errorMessage, errorStatus } from "@/domain/errors";
 import type { SiteService } from "@/frontend/application/site";
+import type { SessionEvents } from "@/frontend/application/ports";
 export type SiteInitialState = {
   initialData: PublicSite;
   initialUser: User | null;
 };
-export function useSiteState(
-  { initialData, initialUser }: SiteInitialState,
-  gateway: SiteService,
-) {
-  const [data, setData] = useState<AdminState>({
-    ...initialData,
+function publicState(site: PublicSite): AdminState {
+  return {
+    ...site,
     leads: [],
     media: [],
     leadTotal: 0,
     notificationConfigured: false,
-  });
+  };
+}
+export function useSiteState(
+  { initialData, initialUser }: SiteInitialState,
+  gateway: SiteService,
+  sessionEvents: SessionEvents,
+) {
+  const [data, setData] = useState(() => publicState(initialData));
   const [user, setUser] = useState(initialUser);
   const [loading, setLoading] = useState(Boolean(initialUser));
   const [storageError, setError] = useState("");
-  const router = useRouter();
-  useEffect(() => {
-    setUser(initialUser);
-    setLoading(Boolean(initialUser));
-  }, [initialUser]);
+  const epoch = useRef(0);
+  const latestRefresh = useRef(0);
+  const leaving = useRef(false);
+  const revoking = useRef(false);
+  const invalidate = useCallback(() => {
+    epoch.current++;
+    latestRefresh.current++;
+    leaving.current = true;
+    setUser(null);
+    setData(publicState(initialData));
+    setLoading(false);
+  }, [initialData]);
   const refresh = useCallback(async () => {
+    if (leaving.current || revoking.current) return;
+    const version = epoch.current;
+    const request = ++latestRefresh.current;
+    const current = () =>
+      version === epoch.current && request === latestRefresh.current;
     try {
-      const result: Partial<AdminState> & PublicSite = await (user
-        ? gateway.adminState()
-        : gateway.publicSite());
-      setData((current) => ({
-        ...current,
-        ...result,
-        leads: result.leads ?? [],
-      }));
+      if (user) {
+        const { user: authenticated, ...result } = await gateway.adminState();
+        if (!current()) return;
+        if (authenticated.id !== user.id || authenticated.role !== user.role) {
+          invalidate();
+          window.location.reload();
+          return;
+        }
+        // Replace the entire snapshot. Merging can retain private fields that
+        // the next account is no longer permitted to receive.
+        setData(result);
+      } else {
+        const result = await gateway.publicSite();
+        if (!current()) return;
+        setData(publicState(result));
+      }
       setError("");
     } catch (error) {
+      if (!current()) return;
       setError(errorMessage(error));
       if (errorStatus(error) === 401) {
-        setUser(null);
-        setData((current) => ({ ...current, leads: [] }));
-        router.replace("/admin/login");
+        invalidate();
+        if (window.location.pathname.startsWith("/admin"))
+          window.location.replace("/admin/login");
       }
     } finally {
-      setLoading(false);
+      if (current()) setLoading(false);
     }
-  }, [user, router, gateway]);
+  }, [user, gateway, invalidate]);
   useEffect(() => {
     if (user) refresh();
   }, [user, refresh]);
   useEffect(() => {
     window.addEventListener("focus", refresh);
-    return () => window.removeEventListener("focus", refresh);
-  }, [refresh]);
+    const restored = (event: PageTransitionEvent) => {
+      if (event.persisted && user) {
+        invalidate();
+        window.location.reload();
+      }
+    };
+    window.addEventListener("pageshow", restored);
+    const timer = user
+      ? window.setInterval(() => {
+          if (document.visibilityState === "visible") void refresh();
+        }, 60000)
+      : undefined;
+    const unsubscribe = sessionEvents.subscribe(() => {
+      invalidate();
+      window.location.reload();
+    });
+    return () => {
+      // These counters intentionally advance on cleanup to invalidate pending
+      // requests; they are lifecycle tokens, not DOM node references.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      epoch.current++;
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      latestRefresh.current++;
+      window.removeEventListener("focus", refresh);
+      window.removeEventListener("pageshow", restored);
+      window.clearInterval(timer);
+      unsubscribe();
+    };
+  }, [refresh, user, sessionEvents, invalidate]);
   async function mutate<T>(
     operation: () => Promise<T>,
   ): Promise<MutationResult<T>> {
+    const version = epoch.current;
+    if (leaving.current)
+      return { ok: false, error: "Phiên đăng nhập đã thay đổi.", status: 401 };
     try {
       const result = await operation();
+      if (version !== epoch.current)
+        return {
+          ok: false,
+          error: "Phiên đăng nhập đã thay đổi.",
+          status: 401,
+        };
       setError("");
       return { ...result, ok: true };
     } catch (error) {
+      if (version !== epoch.current)
+        return {
+          ok: false,
+          error: "Phiên đăng nhập đã thay đổi.",
+          status: 401,
+        };
       setError(errorMessage(error));
-      if (errorStatus(error) === 401) router.replace("/admin/login");
+      if (errorStatus(error) === 401) {
+        invalidate();
+        if (window.location.pathname.startsWith("/admin"))
+          window.location.replace("/admin/login");
+      }
       return {
         ok: false,
         error: errorMessage(error),
@@ -144,18 +215,20 @@ export function useSiteState(
     return result;
   }
   async function logout() {
+    if (revoking.current) return;
+    revoking.current = true;
+    // Discard every pending response before starting server-side revocation.
+    epoch.current++;
+    latestRefresh.current++;
+    setLoading(true);
     const result = await mutate(() => gateway.logout());
     if (result.ok) {
-      setUser(null);
-      setData({
-        ...initialData,
-        leads: [],
-        media: [],
-        leadTotal: 0,
-        notificationConfigured: false,
-      });
-      router.replace("/admin/login");
-      router.refresh();
+      invalidate();
+      sessionEvents.publish();
+      window.location.replace("/admin/login");
+    } else {
+      revoking.current = false;
+      setLoading(false);
     }
     return result;
   }

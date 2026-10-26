@@ -122,13 +122,37 @@ test("owner configures embedded chat; the inside close button preserves drafts w
   );
   const embedded = page.frameLocator(".live-chat-frame").frameLocator("iframe");
   await expect(embedded.getByText("Powered by tawk.to")).toBeVisible();
+  await expect(page.locator(".live-chat-frame")).toHaveAttribute(
+    "src",
+    new RegExp("^http://127\\.0\\.0\\.1:3011/"),
+  );
+  expect(
+    await page
+      .frameLocator(".live-chat-frame")
+      .locator("body")
+      .evaluate(() => {
+        try {
+          return !!window.parent.document.body;
+        } catch {
+          return false;
+        }
+      }),
+  ).toBe(false);
+  expect(
+    (
+      await owner.get(
+        `/api/public/chat-frame?link=${encodeURIComponent(link)}`,
+        { maxRedirects: 0 },
+      )
+    ).status(),
+  ).toBe(307);
   await expect
     .poll(() =>
       embedded
         .getByRole("textbox")
         .evaluate((element) => getComputedStyle(element).fontFamily),
     )
-    .toContain("Be Vietnam Pro");
+    .toContain("Arial");
   expect(
     await embedded
       .locator(".tawk-icon")

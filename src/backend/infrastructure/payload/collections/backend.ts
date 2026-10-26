@@ -1,5 +1,6 @@
 import path from "node:path";
 import type { Access, CollectionConfig, Field, GlobalConfig } from "payload";
+import { objectStorage } from "@/backend/infrastructure/storage/config";
 
 const owner: Access = ({ req }) =>
   Boolean(req.user?.isActive && req.user?.role === "owner");
@@ -129,9 +130,14 @@ export const collections: CollectionConfig[] = [
     upload: {
       staticDir: path.resolve(process.env.MEDIA_DIR || "./var/media"),
       mimeTypes: ["image/webp"],
-      disableLocalStorage: Boolean(process.env.R2_BUCKET),
+      disableLocalStorage: Boolean(objectStorage(process.env)),
     },
-    fields: [text("alt", true)],
+    // Keep the cloud adapter's schema present locally too. Switching storage
+    // providers must not change which columns Payload expects in PostgreSQL.
+    fields: [
+      text("alt", true),
+      text("_objectKey", false, { admin: { hidden: true, readOnly: true } }),
+    ],
   },
   {
     slug: "projects",

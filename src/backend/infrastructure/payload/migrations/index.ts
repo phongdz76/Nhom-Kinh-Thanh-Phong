@@ -3,6 +3,7 @@ import * as migration_20261024_091346_zalo_qr from './20261024_091346_zalo_qr';
 import * as migration_20261024_094304_estimates from './20261024_094304_estimates';
 import * as migration_20261025_031442_map_location from './20261025_031442_map_location';
 import * as migration_20261025_071605_tawk_chat from './20261025_071605_tawk_chat';
+import * as migration_20261026_163958_cloud_media from './20261026_163958_cloud_media';
 
 export const migrations = [
   {
@@ -28,6 +29,11 @@ export const migrations = [
   {
     up: migration_20261025_071605_tawk_chat.up,
     down: migration_20261025_071605_tawk_chat.down,
-    name: '20261025_071605_tawk_chat'
+    name: '20261025_071605_tawk_chat',
+  },
+  {
+    up: migration_20261026_163958_cloud_media.up,
+    down: migration_20261026_163958_cloud_media.down,
+    name: '20261026_163958_cloud_media'
   },
 ];

@@ -50,7 +50,7 @@ export function ConsultationCTA() {
             <br />
             Cùng Thanh Phong bắt đầu.
           </h2>
-          <p>
+          <p className="cta-description">
             Chia sẻ nhu cầu để tìm phương án nhôm kính phù hợp với ngôi nhà.
           </p>
         </div>

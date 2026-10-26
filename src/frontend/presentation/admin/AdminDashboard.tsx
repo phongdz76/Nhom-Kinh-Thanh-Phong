@@ -505,6 +505,7 @@ export default function AdminDashboard() {
         .includes(query.toLowerCase()) &&
       (statusFilter === "all" || item.status === statusFilter),
   );
+  if (!user) return null;
   if (loading)
     return (
       <main className="empty-state">

@@ -1,13 +1,11 @@
 "use client";
-import { authService } from "@/frontend/composition/services";
+import { authService, sessionEvents } from "@/frontend/composition/services";
 import { errorMessage } from "@/domain/errors";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import BrandLink from "@/frontend/presentation/shared/BrandLink";
 import Icon from "@/frontend/presentation/shared/Icon";
 import PasswordInput from "@/frontend/presentation/shared/PasswordInput";
 export default function AdminLogin() {
-  const router = useRouter();
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   return (
@@ -30,8 +28,10 @@ export default function AdminLogin() {
             };
             try {
               await authService.login(data);
-              router.replace("/admin");
-              router.refresh();
+              sessionEvents.publish();
+              // A new document discards every cache and component from the
+              // previous principal, including open lead and estimate dialogs.
+              window.location.replace("/admin");
             } catch (error) {
               setError(errorMessage(error));
               setBusy(false);

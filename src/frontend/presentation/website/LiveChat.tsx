@@ -6,7 +6,15 @@ import { chatService } from "@/frontend/composition/services";
 import { useSite } from "@/frontend/presentation/shared/SiteProvider";
 import Icon from "@/frontend/presentation/shared/Icon";
 
-function ChatWidget({ link, name }: { link: string; name: string }) {
+function ChatWidget({
+  link,
+  name,
+  frameOrigin,
+}: {
+  link: string;
+  name: string;
+  frameOrigin?: string;
+}) {
   const [open, setOpen] = useState(false);
   const [requested, setRequested] = useState(false);
   const [attempt, setAttempt] = useState(0);
@@ -16,7 +24,7 @@ function ChatWidget({ link, name }: { link: string; name: string }) {
   const trigger = useRef<HTMLButtonElement>(null);
   const closeButton = useRef<HTMLButtonElement>(null);
   const frame = useRef<HTMLIFrameElement>(null);
-  const embed = chatService.embed(link);
+  const embed = chatService.embed(link, frameOrigin);
 
   useEffect(() => {
     if (!requested) return;
@@ -24,7 +32,7 @@ function ChatWidget({ link, name }: { link: string; name: string }) {
     function receive(event: MessageEvent) {
       if (
         event.source !== frame.current?.contentWindow ||
-        event.origin !== window.location.origin ||
+        event.origin !== (frameOrigin || window.location.origin) ||
         !event.data ||
         typeof event.data !== "object"
       )
@@ -42,7 +50,7 @@ function ChatWidget({ link, name }: { link: string; name: string }) {
       window.clearTimeout(timer);
       window.removeEventListener("message", receive);
     };
-  }, [requested, attempt]);
+  }, [requested, attempt, frameOrigin]);
 
   useEffect(() => {
     if (!open) return;
@@ -113,11 +121,16 @@ function ChatWidget({ link, name }: { link: string; name: string }) {
               className="live-chat-frame"
               title="Khung trò chuyện trực tiếp"
               src={embed.url}
+              sandbox={
+                frameOrigin
+                  ? "allow-scripts allow-same-origin allow-forms allow-popups allow-downloads"
+                  : undefined
+              }
               referrerPolicy="strict-origin-when-cross-origin"
               onLoad={() =>
                 frame.current?.contentWindow?.postMessage(
                   { type: "thanhphong:chat:probe" },
-                  window.location.origin,
+                  frameOrigin || window.location.origin,
                 )
               }
             />
@@ -154,12 +167,13 @@ function ChatWidget({ link, name }: { link: string; name: string }) {
 }
 
 export default function LiveChat() {
-  const { settings } = useSite();
+  const { settings, chatFrameOrigin } = useSite();
   return settings.tawkDirectChatUrl ? (
     <ChatWidget
       key={settings.tawkDirectChatUrl}
       link={settings.tawkDirectChatUrl}
       name={settings.name}
+      frameOrigin={chatFrameOrigin}
     />
   ) : null;
 }

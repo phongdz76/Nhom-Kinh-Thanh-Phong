@@ -128,6 +128,29 @@ File môi trường, khóa dịch vụ, dữ liệu/media cục bộ, log, cache
 báo cáo test được giữ ngoài Git. CI tạo riêng tài khoản và khóa test tạm thời;
 không tải artifact chứa credentials hoặc dữ liệu khách hàng lên GitHub.
 
-Hai điểm cần kiểm chứng từ báo cáo trước (trạng thái admin sau đổi tài khoản và
-tranh chấp phiên trong Payload cục bộ) chưa được coi là đã xử lý bởi các thay đổi
-chống spam/DDoS này.
+## Bổ sung trước bản chạy thử
+
+Luồng admin hiện thay toàn bộ snapshot khi làm mới, xóa dữ liệu riêng khi mất
+phiên và bỏ các phản hồi cũ sau khi phiên thay đổi. Đăng nhập/đăng xuất dùng điều
+hướng toàn trang; BroadcastChannel chỉ truyền tín hiệu thay đổi phiên giữa các
+tab, không truyền token hoặc dữ liệu khách. Tab được khôi phục từ bộ nhớ trình
+duyệt kiểm tra lại phiên. Login, logout và đổi mật khẩu được tuần tự hóa theo
+tài khoản bằng advisory lock trong PostgreSQL để tránh ghi đè danh sách phiên.
+
+Chat production dùng `CHAT_FRAME_ORIGIN` riêng với SDK nhúng tawk.to. Website
+kiểm tra cả origin và cửa sổ gửi postMessage; iframe có sandbox. Endpoint nhúng
+cũ chỉ phục vụ HTML ở development, chuyển hướng tới host riêng khi đã cấu hình,
+và từ chối chạy SDK cùng origin trong production khi thiếu cấu hình. Host tĩnh
+được tạo bằng `npm run build:chat`; phải deploy cả `_headers` để giới hạn origin
+được phép nhúng. Local development giữ cơ chế cũ để tiếp tục kiểm tra widget.
+
+Lưu ảnh hỗ trợ Supabase Storage qua `S3_*`, giữ khóa ở máy chủ. Migration
+`20261026_163958_cloud_media` thêm cột metadata `_objectkey` mà adapter cloud cần;
+không đổi dữ liệu ảnh đang lưu. Cần chạy migration trước khi dùng bản mới.
+
+Các kiểm thử hồi quy bổ sung ở `tests/session.spec.ts`, `tests/storage.spec.ts`
+và `tests/chat.spec.ts` kiểm tra đổi tài khoản, hết phiên, đăng xuất nhiều tab,
+phản hồi cũ, phiên đồng thời, upload cloud giả lập và ranh giới origin của chat.
+Tài khoản admin tùy biến chưa có MFA. Cấu hình dịch vụ thật, gửi/nhận tin chat và
+upload Supabase trên domain triển khai vẫn phải xác minh khi có tài khoản/khóa.
+Xem [hướng dẫn triển khai](DEPLOYMENT.md).
