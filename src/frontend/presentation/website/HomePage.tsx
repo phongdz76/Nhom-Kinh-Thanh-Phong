@@ -70,7 +70,6 @@ export default function HomePage() {
             priority
             sizes="(max-width: 760px) 100vw, 55vw"
           />
-          <span className="hero-image-credit">Ảnh không gian minh họa</span>
         </div>
       </section>
       <section className="benefit-strip">
