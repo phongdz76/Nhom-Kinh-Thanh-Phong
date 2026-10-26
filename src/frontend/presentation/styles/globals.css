@@ -587,14 +587,6 @@ button:disabled {
   display: grid;
   place-items: center;
 }
-.hero-image-credit {
-  position: absolute;
-  bottom: 11px;
-  right: 24px;
-  z-index: 1;
-  font-size: 8px;
-  color: rgba(255, 255, 255, 0.8);
-}
 .benefit-strip {
   border-bottom: 1px solid var(--line);
   background: white;
@@ -3708,9 +3700,6 @@ textarea::placeholder {
   }
   .hero-photo-caption > strong {
     font-size: 14px;
-  }
-  .hero-image-credit {
-    font-size: 7px;
   }
   .benefit-grid {
     padding: 24px 0;
