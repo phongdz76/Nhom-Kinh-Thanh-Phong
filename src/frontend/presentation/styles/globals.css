@@ -2388,6 +2388,7 @@ textarea::placeholder {
 /* Administration preview */
 .admin-app {
   --admin-line: #e8eae7;
+  --admin-sidebar-width: 312px;
   min-height: 100vh;
   background: #f5f6f8;
   font-size: 12px;
@@ -2415,7 +2416,7 @@ textarea::placeholder {
   left: 0;
   top: 0;
   bottom: 0;
-  width: 240px;
+  width: var(--admin-sidebar-width);
   background: white;
   border-right: 1px solid var(--admin-line);
   display: flex;
@@ -2537,8 +2538,6 @@ textarea::placeholder {
   min-width: 0;
 }
 .admin-user :is(strong, small) {
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 .admin-user strong {
@@ -2555,7 +2554,7 @@ textarea::placeholder {
   margin-top: 3px;
 }
 .admin-body {
-  margin-left: 240px;
+  margin-left: var(--admin-sidebar-width);
 }
 .admin-topbar {
   height: 77px;
@@ -3365,11 +3364,7 @@ textarea::placeholder {
     gap: 45px;
   }
   .admin-sidebar {
-    width: 215px;
     padding: 0 12px;
-  }
-  .admin-body {
-    margin-left: 215px;
   }
   .admin-content {
     padding: 28px 25px;
@@ -4178,7 +4173,7 @@ textarea::placeholder {
   .admin-sidebar {
     transform: translateX(-100%);
     transition: transform 0.2s;
-    width: 245px;
+    width: min(var(--admin-sidebar-width), calc(100vw - 16px));
   }
   .admin-sidebar.is-open {
     transform: translateX(0);
