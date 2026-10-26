@@ -546,8 +546,10 @@ export default function AdminDashboard() {
           <div className="admin-user">
             <span>TP</span>
             <div>
-              <strong>{user?.name || "Quản trị viên"}</strong>
-              <small>{user?.email}</small>
+              <strong title={user?.name || "Quản trị viên"}>
+                {user?.name || "Quản trị viên"}
+              </strong>
+              <small title={user?.email}>{user?.email}</small>
             </div>
           </div>
         </div>
