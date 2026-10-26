@@ -8,6 +8,7 @@
     "dev": "next dev --webpack",
     "build": "next build --webpack",
     "build:netlify": "npm run check:production && npm run build",
+    "build:chat": "tsx scripts/build-chat.ts",
     "start": "next start",
     "test:ui": "playwright test",
     "db:up": "tsx scripts/ensure-database.ts",

@@ -4,20 +4,15 @@ import { postgresAdapter } from "@payloadcms/db-postgres";
 import { s3Storage } from "@payloadcms/storage-s3";
 import { nodemailerAdapter } from "@payloadcms/email-nodemailer";
 import {
+  mediaURL,
+  objectStorage,
+} from "@/backend/infrastructure/storage/config";
+import {
   collections,
   siteSettings,
 } from "@/backend/infrastructure/payload/collections/backend";
 
-const storageKeys = [
-  "R2_ENDPOINT",
-  "R2_BUCKET",
-  "R2_ACCESS_KEY_ID",
-  "R2_SECRET_ACCESS_KEY",
-  "MEDIA_PUBLIC_URL",
-];
-const configuredStorage = storageKeys.filter((key) => process.env[key]);
-if (configuredStorage.length && configuredStorage.length !== storageKeys.length)
-  throw new Error("Configure all R2 storage variables together.");
+const storage = objectStorage(process.env);
 if (!process.env.PAYLOAD_SECRET || process.env.PAYLOAD_SECRET.length < 32)
   throw new Error("PAYLOAD_SECRET must contain at least 32 characters.");
 if (!process.env.DATABASE_URL)
@@ -78,23 +73,22 @@ export default buildConfig({
           },
         }),
       }),
-  plugins: configuredStorage.length
+  plugins: storage
     ? [
         s3Storage({
           collections: {
             media: {
-              generateFileURL: ({ filename }) =>
-                `${process.env.MEDIA_PUBLIC_URL!.replace(/\/$/, "")}/${encodeURIComponent(filename)}`,
+              generateFileURL: ({ filename }) => mediaURL(storage, filename),
             },
           },
-          bucket: process.env.R2_BUCKET!,
+          bucket: storage.bucket,
           config: {
-            endpoint: process.env.R2_ENDPOINT,
-            region: "auto",
+            endpoint: storage.endpoint,
+            region: storage.region,
             forcePathStyle: true,
             credentials: {
-              accessKeyId: process.env.R2_ACCESS_KEY_ID!,
-              secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
+              accessKeyId: storage.accessKeyId,
+              secretAccessKey: storage.secretAccessKey,
             },
           },
         }),

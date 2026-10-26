@@ -66,6 +66,7 @@ export type LeadEvent = {
 };
 export type Media = { id: ID; url: string; alt: string; filename?: string };
 export type PublicSite = {
+  chatFrameOrigin?: string;
   products: Product[];
   categories: Category[];
   articles: Article[];

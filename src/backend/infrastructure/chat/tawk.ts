@@ -22,7 +22,32 @@ export function createChatFrame(link: string) {
   const [, , propertyId, widgetId] = new URL(
     tawkChatLinkSchema.parse(link),
   ).pathname.split("/");
+  return chatDocument(propertyId, widgetId);
+}
+
+export function createHostedChatFrame(parentOrigin: string) {
+  const parent = new URL(parentOrigin);
+  if (
+    parent.origin !== parentOrigin ||
+    !["https:", "http:"].includes(parent.protocol)
+  )
+    throw new Error("A parent origin is required for the hosted chat frame.");
+  return chatDocument("hosted", "hosted", parent.origin);
+}
+
+function chatDocument(
+  propertyId: string,
+  widgetId: string,
+  parentOrigin?: string,
+) {
   const containerId = `tawk_${propertyId}`;
+  const source = parentOrigin
+    ? String.raw`
+var link=new URLSearchParams(window.location.search).get("link")||"";
+var match=/^https:\/\/tawk\.to\/chat\/([a-f0-9]{24})\/([a-zA-Z0-9]+)\/?$/.exec(link);
+var embedSource=match ? "https://embed.tawk.to/"+match[1]+"/"+match[2] : null;
+`
+    : `var embedSource=${JSON.stringify(`https://embed.tawk.to/${propertyId}/${widgetId}`)};`;
   return `<!doctype html>
 <html lang="vi">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -35,6 +60,8 @@ body{overflow:auto}
 <body><div id="${containerId}"></div>
 <script>
 var state="loading",checkTimer;
+var parentOrigin=${parentOrigin ? JSON.stringify(parentOrigin) : "window.location.origin"};
+${source}
 // Reuse Next's self-hosted font, including its Vietnamese glyphs and weights.
 // Styling only text containers leaves the vendor's icon fonts intact.
 var chatFont="Arial, Helvetica, sans-serif",fontFaces="";
@@ -73,9 +100,9 @@ function applyTypography(doc){
   });
 }
 applyTypography(document);
-function notify(type){state=type;window.parent.postMessage({type:type},window.location.origin)}
+function notify(type){state=type;window.parent.postMessage({type:type},parentOrigin)}
 window.addEventListener("message",function(event){
-  if(event.source===window.parent && event.origin===window.location.origin && event.data && event.data.type==="thanhphong:chat:probe" && state!=="loading") notify(state);
+  if(event.source===window.parent && event.origin===parentOrigin && event.data && event.data.type==="thanhphong:chat:probe" && state!=="loading") notify(state);
 });
 function hasContent(root){
   if(!root)return false;
@@ -98,10 +125,10 @@ var Tawk_API={embedded:"${containerId}",disableWidgetFont:true,onLoad:function()
 window.addEventListener("pagehide",function(){clearTimeout(checkTimer)});
 var script=document.createElement("script");
 script.async=true;
-script.src="https://embed.tawk.to/${propertyId}/${widgetId}";
+if(embedSource)script.src=embedSource;
 script.charset="UTF-8";
 script.crossOrigin="anonymous";
 script.onerror=function(){notify("thanhphong:chat:error")};
-document.head.appendChild(script);
+if(embedSource)document.head.appendChild(script);else notify("thanhphong:chat:error");
 </script></body></html>`;
 }

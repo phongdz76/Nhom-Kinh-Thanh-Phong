@@ -35,7 +35,7 @@ export default function NewsPage({ articles }: { articles: Article[] }) {
                   sizes="(max-width: 760px) 100vw, 33vw"
                 />
               </div>
-              <span>
+              <span className="journal-meta">
                 {article.category} <i /> {article.time}
               </span>
               <h2>{article.title}</h2>

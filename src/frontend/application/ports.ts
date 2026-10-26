@@ -27,7 +27,7 @@ import type { FormProtection } from "@/domain/form-protection";
 
 export interface SiteGateway {
   publicSite(): Promise<PublicSite>;
-  adminState(): Promise<AdminState>;
+  adminState(): Promise<AdminState & { user: User }>;
   saveProduct(
     product: ProductInput,
     id?: string,
@@ -56,8 +56,12 @@ export interface AuthGateway {
     newPassword: string;
   }): Promise<{ ok: boolean }>;
 }
+export interface SessionEvents {
+  publish(): void;
+  subscribe(listener: () => void): () => void;
+}
 export interface ChatGateway {
-  embed(directChatUrl: string): { url: string };
+  embed(directChatUrl: string, frameOrigin?: string): { url: string };
 }
 export interface FormChallengeGateway {
   render(

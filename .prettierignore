@@ -2,11 +2,15 @@ node_modules/
 .next/
 .next-*/
 out/
+out-chat/
 build/
 coverage/
 test-results/
 playwright-report/
 artifacts/
+.cache/
+tmp/
+temp/
 var/
 docs/
 public/

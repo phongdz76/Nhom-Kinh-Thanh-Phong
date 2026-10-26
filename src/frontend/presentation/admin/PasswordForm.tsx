@@ -1,5 +1,5 @@
 "use client";
-import { authService } from "@/frontend/composition/services";
+import { authService, sessionEvents } from "@/frontend/composition/services";
 import { errorMessage } from "@/domain/errors";
 import { useState } from "react";
 import Icon from "@/frontend/presentation/shared/Icon";
@@ -22,6 +22,7 @@ export default function PasswordForm() {
         };
         try {
           await authService.changePassword(values);
+          sessionEvents.publish();
           // A full navigation clears authenticated client state after revocation.
           // eslint-disable-next-line @next/next/no-location-assign-relative-destination
           window.location.assign("/admin/login");

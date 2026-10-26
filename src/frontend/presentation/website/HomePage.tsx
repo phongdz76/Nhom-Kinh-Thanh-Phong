@@ -308,7 +308,7 @@ export default function HomePage() {
                     sizes="(max-width: 760px) 100vw, 33vw"
                   />
                 </div>
-                <span>
+                <span className="journal-meta">
                   {article.category} <i /> {article.time}
                 </span>
                 <h3>{article.title}</h3>

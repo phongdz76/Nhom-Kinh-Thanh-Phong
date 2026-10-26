@@ -18,7 +18,11 @@ export default function SiteShell({
   const admin = pathname.startsWith("/admin");
   return (
     <HomeNavigationProvider>
-      <SiteProvider initialData={initialData} initialUser={initialUser}>
+      <SiteProvider
+        key={`${initialUser?.id || "guest"}:${initialUser?.role || ""}`}
+        initialData={initialData}
+        initialUser={initialUser}
+      >
         {admin ? (
           children
         ) : (

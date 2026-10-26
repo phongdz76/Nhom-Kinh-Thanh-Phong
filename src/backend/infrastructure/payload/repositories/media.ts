@@ -7,6 +7,10 @@ import { readFile } from "node:fs/promises";
 import { cms } from "../client";
 import { ApplicationError } from "@/backend/application/errors";
 import type { MediaRepository } from "@/backend/application/ports";
+import {
+  mediaURL,
+  objectStorage,
+} from "@/backend/infrastructure/storage/config";
 export const mediaRepository: MediaRepository = {
   async upload(file, alt, user) {
     let data: Buffer;
@@ -58,9 +62,10 @@ export const mediaRepository: MediaRepository = {
     });
     if (!media.filename || path.basename(media.filename) !== media.filename)
       throw new ApplicationError("notFound", "Không tìm thấy ảnh.");
-    if (process.env.R2_BUCKET && process.env.MEDIA_PUBLIC_URL)
+    const storage = objectStorage(process.env);
+    if (storage)
       return {
-        redirect: `${process.env.MEDIA_PUBLIC_URL.replace(/\/$/, "")}/${encodeURIComponent(media.filename)}`,
+        redirect: mediaURL(storage, media.filename),
       };
     const file = path.resolve(
       process.env.MEDIA_DIR || "./var/media",

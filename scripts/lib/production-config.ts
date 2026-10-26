@@ -1,3 +1,6 @@
+import { objectStorage } from "../../src/backend/infrastructure/storage/config";
+import { hostedChatOrigin } from "../../src/backend/infrastructure/chat/config";
+
 export function productionErrors(env: Record<string, string | undefined>) {
   const errors: string[] = [];
   const requireValue = (key: string) => {
@@ -37,6 +40,14 @@ export function productionErrors(env: Record<string, string | undefined>) {
     errors.push(
       "PAYLOAD_SECRET must have at least 48 random characters in production",
     );
+  try {
+    if (!hostedChatOrigin(env)?.startsWith("https://"))
+      errors.push(
+        "CHAT_FRAME_ORIGIN must be a separate HTTPS origin for production chat.",
+      );
+  } catch (error) {
+    errors.push((error as Error).message);
+  }
   for (const key of ["TURNSTILE_SITE_KEY", "TURNSTILE_SECRET_KEY"])
     requireValue(key);
   if (!/^[A-Za-z0-9_-]{10,100}$/.test(env.TURNSTILE_SITE_KEY || ""))
@@ -51,20 +62,13 @@ export function productionErrors(env: Record<string, string | undefined>) {
     errors.push(
       "Use real Turnstile credentials instead of Cloudflare dummy keys",
     );
-  for (const key of [
-    "R2_ENDPOINT",
-    "R2_BUCKET",
-    "R2_ACCESS_KEY_ID",
-    "R2_SECRET_ACCESS_KEY",
-    "MEDIA_PUBLIC_URL",
-  ])
-    requireValue(key);
-  for (const key of ["R2_ENDPOINT", "MEDIA_PUBLIC_URL"]) {
-    try {
-      if (new URL(env[key] || "").protocol !== "https:") throw new Error();
-    } catch {
-      errors.push(`${key} must use HTTPS`);
-    }
+  try {
+    if (!objectStorage(env))
+      errors.push(
+        "Object storage is required: configure S3_* for Supabase Storage and MEDIA_PUBLIC_URL.",
+      );
+  } catch (error) {
+    errors.push((error as Error).message);
   }
   if (env.SMTP_HOST) {
     requireValue("SMTP_FROM");
