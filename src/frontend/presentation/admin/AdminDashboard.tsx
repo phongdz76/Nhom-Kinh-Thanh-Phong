@@ -539,11 +539,11 @@ export default function AdminDashboard() {
             </button>
           ))}
         </nav>
+        <button className="admin-logout" onClick={logout}>
+          <Icon name="logout" size={19} />
+          Đăng xuất
+        </button>
         <div className="admin-sidebar-bottom">
-          <button className="admin-logout" onClick={logout}>
-            <Icon name="logout" size={19} />
-            Đăng xuất
-          </button>
           <div className="admin-user">
             <span>TP</span>
             <div>

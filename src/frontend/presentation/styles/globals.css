@@ -6542,6 +6542,9 @@ textarea::placeholder {
   margin-top: auto;
   padding-block: 20px;
 }
+.admin-app .admin-logout {
+  margin-top: 6px;
+}
 .admin-app .admin-brand .brand {
   gap: 10px;
 }
