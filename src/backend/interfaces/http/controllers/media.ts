@@ -11,9 +11,13 @@ import {
 export const uploadMedia = endpoint(async (request) => {
   sameOrigin(request);
   const user = await requireUser(request);
-  if (!request.headers.get("content-type")?.startsWith("multipart/form-data"))
+  if (
+    !/^multipart\/form-data\s*;\s*boundary=/i.test(
+      request.headers.get("content-type") || "",
+    )
+  )
     throw new HttpError(415, "Yêu cầu tải ảnh không hợp lệ.");
-  const bytes = await boundedBody(request, 8 * 1024 * 1024 + 131072);
+  const bytes = await boundedBody(request, 8 * 1024 * 1024 + 131072, 30000);
   const form = await new Response(new Uint8Array(bytes), {
     headers: { "content-type": request.headers.get("content-type")! },
   }).formData();

@@ -3,10 +3,12 @@ dotenv.config({
   path: process.env.ENV_FILE || [".env.local", ".env"],
   quiet: true,
 });
+const action = process.argv[2] || "migrate";
+if (action === "migrate" && process.env.DATABASE_MIGRATION_URL)
+  process.env.DATABASE_URL = process.env.DATABASE_MIGRATION_URL;
 const { getPayload } = await import("payload");
 const { default: config } = await import("@payload-config");
 const payload = await getPayload({ config });
-const action = process.argv[2] || "migrate";
 try {
   if (action === "create-migration") {
     await payload.db.createMigration({

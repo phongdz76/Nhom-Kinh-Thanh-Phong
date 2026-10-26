@@ -31,6 +31,7 @@
     "src/**/*.tsx",
     "scripts/**/*.ts",
     "tests/**/*.ts",
+    "netlify/**/*.ts",
     ".next/types/**/*.ts",
     ".next-verify/types/**/*.ts",
     ".next-verify/dev/types/**/*.ts",

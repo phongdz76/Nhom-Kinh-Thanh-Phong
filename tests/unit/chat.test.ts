@@ -10,7 +10,7 @@ test("chat accepts only official direct links and validates before embedding a s
   const service = createChatService({
     embed(url) {
       opened.push(url);
-      return { document: "embedded chat" };
+      return { url: "embedded chat" };
     },
   });
   service.embed(`  ${link}  `);
@@ -23,6 +23,9 @@ test("chat accepts only official direct links and validates before embedding a s
     "http://tawk.to/chat/0123456789abcdef01234567/widget",
     "https://embed.tawk.to/0123456789abcdef01234567/widget",
     `${link}?script=anything`,
+    `${link}?layout=modern&script=anything`,
+    `${link}?layout=modern&layout=modern`,
+    `${link}?layout=modern#fragment`,
     `${link}#fragment`,
     `${link}/extra`,
     "<script src='https://embed.tawk.to/widget'></script>",
@@ -32,6 +35,21 @@ test("chat accepts only official direct links and validates before embedding a s
     assert.throws(() => service.embed(unsafe));
   }
   assert.equal(opened.length, 2);
+});
+
+test("copied modern direct-chat links keep the configured widget identity", () => {
+  const modern = `${link}?layout=modern`;
+  assert.equal(tawkChatLinkSchema.parse(modern), link);
+  assert.equal(tawkChatLinkSchema.parse(`${link}/?layout=modern`), `${link}/`);
+  const opened: string[] = [];
+  const service = createChatService({
+    embed(url) {
+      opened.push(url);
+      return { url };
+    },
+  });
+  service.embed(modern);
+  assert.deepEqual(opened, [link]);
 });
 
 test("existing site settings keep chat disabled until a direct link is saved", () => {
@@ -48,6 +66,13 @@ test("existing site settings keep chat disabled until a direct link is saved", (
   assert.equal(
     settingsSchema.parse({ ...settings, tawkDirectChatUrl: link })
       .tawkDirectChatUrl,
+    link,
+  );
+  assert.equal(
+    settingsSchema.parse({
+      ...settings,
+      tawkDirectChatUrl: `${link}?layout=modern`,
+    }).tawkDirectChatUrl,
     link,
   );
 });

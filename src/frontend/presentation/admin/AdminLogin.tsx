@@ -2,7 +2,6 @@
 import { authService } from "@/frontend/composition/services";
 import { errorMessage } from "@/domain/errors";
 import { useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import BrandLink from "@/frontend/presentation/shared/BrandLink";
 import Icon from "@/frontend/presentation/shared/Icon";
@@ -69,9 +68,6 @@ export default function AdminLogin() {
         <p className="login-help">
           Tài khoản do chủ cơ sở khởi tạo. Không có đăng ký công khai.
         </p>
-        <Link href="/" className="text-link">
-          Trở về website <Icon name="diagonal" size={15} />
-        </Link>
       </div>
     </main>
   );

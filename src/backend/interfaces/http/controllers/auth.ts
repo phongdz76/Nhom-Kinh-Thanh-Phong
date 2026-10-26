@@ -18,7 +18,9 @@ export const login = endpoint(async (request) => {
   const response = json({ user: result.user });
   response.cookies.set(COOKIE, result.token, {
     httpOnly: true,
-    secure: new URL(request.url).protocol === "https:",
+    secure:
+      process.env.SERVER_URL?.startsWith("https://") ||
+      new URL(request.url).protocol === "https:",
     sameSite: "lax",
     path: "/",
     maxAge: 28800,

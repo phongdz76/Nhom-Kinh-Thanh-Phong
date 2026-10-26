@@ -26,8 +26,16 @@
 
 # misc
 .DS_Store
+Thumbs.db
+Desktop.ini
 *.pem
 /docs/
+/.cache/
+/tmp/
+/temp/
+*.log
+*.pid
+*.pid.lock
 
 # debug
 npm-debug.log*
@@ -42,6 +50,7 @@ yarn-error.log*
 
 # vercel
 .vercel
+.netlify/
 
 # typescript
 *.tsbuildinfo

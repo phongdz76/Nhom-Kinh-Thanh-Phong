@@ -10,6 +10,7 @@ export class ApplicationError extends Error {
   constructor(
     public readonly code: ErrorCode,
     message: string,
+    public readonly retryAfterSeconds?: number,
   ) {
     super(message);
     this.name = "ApplicationError";

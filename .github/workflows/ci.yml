@@ -1,0 +1,86 @@
+name: CI
+
+on:
+  push:
+    branches: [dev, main]
+  pull_request:
+    branches: [dev, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Verify application
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ${{ github.run_id }}-${{ github.run_attempt }}-ci
+          POSTGRES_DB: thanhphong_test
+        ports: ["55432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres -d thanhphong_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - run: npm ci
+      - name: Generate private, disposable test configuration
+        run: npx --no-install tsx scripts/ci-setup.ts
+        env:
+          CI_DATABASE_PASSWORD: ${{ github.run_id }}-${{ github.run_attempt }}-ci
+      - run: npm run check:secrets:history
+      - run: npm audit --audit-level=moderate
+      - run: npm run check
+      - run: npm run test:setup
+      - run: npm run build
+      - run: npx --no-install playwright install --with-deps chromium
+      - run: npm run test:ui
+      # Never upload .env, database dumps, browser traces, or unredacted logs.
+
+  deploy:
+    name: Deploy verified commit
+    needs: verify
+    if: github.event_name == 'push' && vars.NETLIFY_CD_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    environment:
+      name: ${{ github.ref_name == 'main' && 'production' || 'dev' }}
+    concurrency:
+      group: deploy-${{ github.ref_name }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - run: npm ci
+      - name: Build, migrate and deploy to the environment's Netlify site
+        run: |
+          test -n "$NETLIFY_AUTH_TOKEN" || { echo "Missing Netlify deployment credential"; exit 1; }
+          test -n "$NETLIFY_SITE_ID" || { echo "Missing environment-specific Netlify site ID"; exit 1; }
+          npm exec --yes --package=netlify-cli@27.14.2 -- netlify deploy --prod --context production --site "$NETLIFY_SITE_ID" --message "$GITHUB_SHA"
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ vars.NETLIFY_SITE_ID }}

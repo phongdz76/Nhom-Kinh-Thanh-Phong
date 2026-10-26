@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures/browser";
 import type { Page } from "@playwright/test";
 import type { Payload } from "payload";
 import type { PublicSite } from "@/domain/models";

@@ -112,7 +112,7 @@ function ChatWidget({ link, name }: { link: string; name: string }) {
               ref={frame}
               className="live-chat-frame"
               title="Khung trò chuyện trực tiếp"
-              srcDoc={embed.document}
+              src={embed.url}
               referrerPolicy="strict-origin-when-cross-origin"
               onLoad={() =>
                 frame.current?.contentWindow?.postMessage(

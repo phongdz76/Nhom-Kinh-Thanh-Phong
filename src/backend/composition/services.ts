@@ -12,6 +12,7 @@ import { authRepository } from "@/backend/infrastructure/payload/repositories/au
 import { mediaRepository } from "@/backend/infrastructure/payload/repositories/media";
 import { rateLimit } from "@/backend/infrastructure/security/rate-limit";
 import { hash } from "@/backend/infrastructure/security/hash";
+import { verifyFormSubmission } from "@/backend/infrastructure/security/turnstile";
 
 const limiter = { check: rateLimit };
 export const catalog = createCatalogService(catalogRepository);
@@ -23,6 +24,7 @@ export const leads = createLeadService({
   catalog: catalogRepository,
   limiter,
   hash,
+  verifySubmission: verifyFormSubmission,
   newCode: () =>
     `TP-${new Date().toISOString().slice(0, 10).replaceAll("-", "")}-${randomBytes(4).toString("hex").toUpperCase()}`,
   now: () => new Date().toISOString(),

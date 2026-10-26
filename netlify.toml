@@ -1,0 +1,17 @@
+[build]
+  command = "npm run build:netlify"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22.23.4"
+  NEXT_TELEMETRY_DISABLED = "1"
+
+# The current Next.js adapter is auto-detected by Netlify. Do not add the
+# legacy Next.js plugin or redirect every request to index.html.
+[functions]
+  node_bundler = "esbuild"
+
+[context.deploy-preview]
+  # CI runs pull requests without production credentials. Deploy only dev/main
+  # through the gated GitHub workflow, using separate Netlify sites/databases.
+  ignore = "exit 0"

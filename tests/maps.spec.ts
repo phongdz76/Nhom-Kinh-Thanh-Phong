@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures/browser";
 
 test("contact and footer maps follow the saved address without retaining an old location", async ({
   page,

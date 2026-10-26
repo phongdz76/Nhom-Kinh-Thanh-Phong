@@ -5,6 +5,9 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useSite } from "@/frontend/presentation/shared/SiteProvider";
 import Icon from "@/frontend/presentation/shared/Icon";
+import FormVerification, {
+  type FormVerificationState,
+} from "./FormVerification";
 export default function ConsultationForm() {
   const params = useSearchParams();
   const { publishedProducts: products, addLead } = useSite();
@@ -12,6 +15,12 @@ export default function ConsultationForm() {
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [verification, setVerification] = useState<FormVerificationState>({
+    ready: false,
+    token: "",
+  });
+  const [verificationAttempt, setVerificationAttempt] = useState(0);
+  const inFlight = useRef(false);
   const resultRef = useRef<HTMLDivElement>(null);
   const submissionKey = useRef<string | null>(null);
   useEffect(() => {
@@ -22,7 +31,11 @@ export default function ConsultationForm() {
   }, [success]);
   async function submit(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (saving) return;
+    if (saving || inFlight.current) return;
+    if (!verification.ready) {
+      setError("Vui lòng hoàn tất xác minh trước khi gửi.");
+      return;
+    }
     const form = event.currentTarget;
     const values = new FormData(form);
     const phone = String(values.get("phone")).replace(/[\s.()-]/g, "");
@@ -37,36 +50,48 @@ export default function ConsultationForm() {
       setError("Vui lòng nhập họ tên từ 2 ký tự.");
       return;
     }
+    if (values.get("contactAcknowledged") !== "on") {
+      setError("Vui lòng đồng ý để cơ sở liên hệ theo yêu cầu.");
+      return;
+    }
+    inFlight.current = true;
     setSaving(true);
     setError("");
     const product = products.find(
       (item) => item.id === selected && item.status === "published",
     );
     submissionKey.current ||= crypto.randomUUID();
-    const result = await addLead(
-      {
-        name,
-        phone,
-        email: String(values.get("email") || "").trim(),
-        location: String(values.get("location") || "").trim(),
-        message: String(values.get("message") || "").trim(),
-        productId: product?.id || "",
-        type: String(values.get("type")) as LeadInput["type"],
-        source: window.location.pathname,
-        contactAcknowledged: true,
-        privacyVersion: "2026-10-v1",
-        website: "",
-      },
-      submissionKey.current,
-    );
-    if (result.ok) {
-      setSuccess(result.code);
-      form.reset();
-    } else {
-      setError(result.error);
-      if (result.status === 409) submissionKey.current = null;
+    try {
+      const result = await addLead(
+        {
+          name,
+          phone,
+          email: String(values.get("email") || "").trim(),
+          location: String(values.get("location") || "").trim(),
+          message: String(values.get("message") || "").trim(),
+          productId: product?.id || "",
+          type: String(values.get("type")) as LeadInput["type"],
+          source: window.location.pathname,
+          contactAcknowledged: true,
+          privacyVersion: "2026-10-v1",
+          website: String(values.get("website") || ""),
+        },
+        submissionKey.current,
+        verification.token,
+      );
+      if (result.ok) {
+        setSuccess(result.code);
+        form.reset();
+      } else {
+        setError(result.error);
+        if (result.status === 409) submissionKey.current = null;
+      }
+    } finally {
+      inFlight.current = false;
+      setSaving(false);
+      setVerification({ ready: false, token: "" });
+      setVerificationAttempt((value) => value + 1);
     }
-    setSaving(false);
   }
   if (success)
     return (
@@ -108,6 +133,18 @@ export default function ConsultationForm() {
         <p>Điền thông tin bên dưới để người phụ trách tư vấn cho bạn.</p>
       </div>
       <div className="form-grid">
+        <div className="form-honeypot" aria-hidden="true">
+          <label>
+            Để trống ô này
+            <input
+              name="website"
+              type="text"
+              tabIndex={-1}
+              autoComplete="off"
+              maxLength={200}
+            />
+          </label>
+        </div>
         <label>
           Họ và tên <span>*</span>
           <input
@@ -192,7 +229,7 @@ export default function ConsultationForm() {
         </label>
       </div>
       <label className="consent-field">
-        <input type="checkbox" required />
+        <input type="checkbox" name="contactAcknowledged" required />
         <span>
           Tôi đồng ý để Thanh Phong lưu thông tin và liên hệ theo yêu cầu này.{" "}
           <Link href="/policies/privacy">Xem cách xử lý thông tin.</Link>
@@ -207,10 +244,11 @@ export default function ConsultationForm() {
           {error}
         </p>
       )}
+      <FormVerification key={verificationAttempt} onChange={setVerification} />
       <button
         type="submit"
         className="button button-primary submit-button"
-        disabled={saving}
+        disabled={saving || !verification.ready}
         aria-busy={saving}
       >
         <Icon name="file" size={20} />

@@ -22,6 +22,13 @@ export default function PrivacyPage() {
           hiểu là đăng ký nhận quảng cáo. Khi kênh thông báo được cấu hình, cơ
           sở nhận mã yêu cầu và liên kết vào quản trị để xem chi tiết.
         </p>
+        <h2>Xác minh khi gửi form</h2>
+        <p>
+          Website sử dụng Cloudflare Turnstile để hạn chế yêu cầu tự động và áp
+          dụng giới hạn gửi lặp. Khi xác minh được bật, trình duyệt kết nối tới
+          Cloudflare; việc gửi form cần hoàn tất bước xác minh này. Nếu chưa gửi
+          được, bạn có thể liên hệ qua số điện thoại của cơ sở.
+        </p>
         <h2>Trò chuyện trực tiếp</h2>
         <p>
           Khi kênh chat được bật, khung tawk.to chỉ tải sau khi bạn bấm “Chat tư

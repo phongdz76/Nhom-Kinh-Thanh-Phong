@@ -5,6 +5,7 @@ import * as leads from "./controllers/leads";
 import * as estimates from "./controllers/estimates";
 import * as media from "./controllers/media";
 import * as health from "./controllers/health";
+import * as chat from "./controllers/chat";
 import { createRouter } from "./routing";
 
 export const dispatchApi = createRouter([
@@ -46,6 +47,11 @@ export const dispatchApi = createRouter([
   { path: "health", methods: { GET: health.getHealth } },
   { path: "media/:id", methods: { GET: media.getMedia } },
   { path: "public/leads", methods: { POST: leads.submitLead } },
+  { path: "public/chat-frame", methods: { GET: chat.getChatFrame } },
+  {
+    path: "public/form-protection",
+    methods: { GET: publicController.getFormProtection },
+  },
   {
     path: "public/products/:id",
     methods: { GET: publicController.getProduct },

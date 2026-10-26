@@ -3,15 +3,10 @@ import { NextResponse } from "next/server";
 import { ApplicationError, type ErrorCode } from "@/backend/application/errors";
 import { errorStatus } from "@/domain/errors";
 import { ZodError } from "zod";
+import { guardRequest } from "@/backend/composition/security";
+import { boundedBody, HttpError } from "./body";
+export { boundedBody, HttpError } from "./body";
 
-export class HttpError extends Error {
-  constructor(
-    public status: number,
-    message: string,
-  ) {
-    super(message);
-  }
-}
 export function json(value: unknown, status = 200) {
   return NextResponse.json(value, {
     status,
@@ -23,37 +18,19 @@ export function json(value: unknown, status = 200) {
 }
 export function sameOrigin(request: Request) {
   const origin = request.headers.get("origin");
-  if (
-    !origin ||
-    ![new URL(request.url).origin, process.env.SERVER_URL].includes(origin)
-  )
+  const configured = process.env.SERVER_URL;
+  const allowedOrigin = configured
+    ? new URL(configured).origin
+    : new URL(request.url).origin;
+  if (!origin || origin !== allowedOrigin)
     throw new HttpError(403, "Nguồn gửi yêu cầu không hợp lệ.");
 }
-export async function boundedBody(request: Request, limit: number) {
-  if (Number(request.headers.get("content-length") || 0) > limit)
-    throw new HttpError(413, "Dữ liệu gửi lên quá lớn.");
-  const reader = request.body?.getReader();
-  if (!reader) throw new HttpError(400, "Thiếu nội dung yêu cầu.");
-  const chunks: Uint8Array[] = [];
-  let length = 0;
-  try {
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      length += value.byteLength;
-      if (length > limit) {
-        await reader.cancel();
-        throw new HttpError(413, "Dữ liệu gửi lên quá lớn.");
-      }
-      chunks.push(value);
-    }
-  } finally {
-    reader.releaseLock();
-  }
-  return Buffer.concat(chunks);
-}
 export async function readJSON(request: Request, limit = 16384) {
-  if (!request.headers.get("content-type")?.startsWith("application/json"))
+  if (
+    !/^application\/json(?:\s*;|$)/i.test(
+      request.headers.get("content-type") || "",
+    )
+  )
     throw new HttpError(415, "Yêu cầu cần định dạng JSON.");
   try {
     return JSON.parse((await boundedBody(request, limit)).toString("utf8"));
@@ -73,6 +50,7 @@ export function endpoint(
     context: { params: Promise<Record<string, string>> },
   ) => {
     try {
+      await guardRequest(request);
       return await handler(request, context);
     } catch (error) {
       if (error instanceof ApplicationError) {
@@ -85,7 +63,13 @@ export function endpoint(
           tooManyRequests: 429,
           unavailable: 503,
         };
-        return json({ error: error.message }, status[error.code]);
+        const response = json({ error: error.message }, status[error.code]);
+        if (error.code === "tooManyRequests" || error.retryAfterSeconds)
+          response.headers.set(
+            "Retry-After",
+            String(error.retryAfterSeconds || 60),
+          );
+        return response;
       }
       if (error instanceof HttpError)
         return json({ error: error.message }, error.status);

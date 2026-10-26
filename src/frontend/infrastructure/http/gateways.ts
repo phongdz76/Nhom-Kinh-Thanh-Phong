@@ -4,7 +4,32 @@ import type {
   SiteGateway,
 } from "@/frontend/application/ports";
 import { API_PATHS as paths } from "./api-paths";
-import { jsonBody, requestBlob, requestJSON } from "./client";
+import { ApiError, jsonBody, requestBlob, requestJSON } from "./client";
+import type { FormProtection } from "@/domain/form-protection";
+
+async function requestBeforeDeadline<T>(
+  path: string,
+  options: RequestInit,
+  timeout: number,
+): Promise<T> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeout);
+  try {
+    return await requestJSON<T>(path, {
+      ...options,
+      signal: controller.signal,
+    });
+  } catch (error) {
+    if (controller.signal.aborted)
+      throw new ApiError(
+        "Chưa nhận được kết quả. Vui lòng thử lại để kiểm tra yêu cầu.",
+        408,
+      );
+    throw error;
+  } finally {
+    clearTimeout(timer);
+  }
+}
 
 export const siteApi: SiteGateway = {
   publicSite: () => requestJSON(paths.public.site),
@@ -29,11 +54,24 @@ export const siteApi: SiteGateway = {
     requestJSON(paths.admin.categories, jsonBody(category)),
   saveContent: (kind, document) =>
     requestJSON(paths.admin.content(kind), jsonBody(document)),
-  addLead: (lead, key) =>
-    requestJSON(paths.public.leads, {
-      ...jsonBody(lead),
-      headers: { "Idempotency-Key": key },
-    }),
+  formProtection: () =>
+    requestBeforeDeadline<FormProtection>(
+      paths.public.formProtection,
+      {},
+      8000,
+    ),
+  addLead: (lead, key, token) =>
+    requestBeforeDeadline<{ code: string }>(
+      paths.public.leads,
+      {
+        ...jsonBody(lead),
+        headers: {
+          "Idempotency-Key": key,
+          ...(token ? { "X-Form-Token": token } : {}),
+        },
+      },
+      30000,
+    ),
   logout: () => requestJSON(paths.auth.logout, jsonBody({})),
 };
 export const authApi: AuthGateway = {

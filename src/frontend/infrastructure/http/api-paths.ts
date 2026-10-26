@@ -7,8 +7,11 @@ export const API_PATHS = {
     session: "/api/auth/session",
   },
   public: {
+    chatFrame: (link: string) =>
+      `/api/public/chat-frame?link=${encodeURIComponent(link)}`,
     site: "/api/public/site",
     leads: "/api/public/leads",
+    formProtection: "/api/public/form-protection",
     products: "/api/public/products",
     product: (id: string) => `/api/public/products/${segment(id)}`,
   },

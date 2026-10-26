@@ -16,6 +16,13 @@ export default defineConfig({
     url: "http://127.0.0.1:3010",
     reuseExistingServer: false,
     timeout: 60000,
-    env: { ...env, NEXT_DIST_DIR: ".next-verify" },
+    env: {
+      ...env,
+      NEXT_DIST_DIR: ".next-verify",
+      TURNSTILE_SITE_KEY: "offline-test-site-key",
+      TURNSTILE_SECRET_KEY: env.PAYLOAD_SECRET,
+      NODE_OPTIONS:
+        "--import tsx --import ./tests/fixtures/turnstile-server.ts",
+    },
   },
 });

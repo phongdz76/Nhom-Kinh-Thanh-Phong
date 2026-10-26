@@ -22,9 +22,12 @@ export const tawkChatLinkSchema = z
   .trim()
   .max(250)
   .regex(
-    /^https:\/\/tawk\.to\/chat\/[a-f0-9]{24}\/[a-zA-Z0-9]+\/?$/,
+    /^https:\/\/tawk\.to\/chat\/[a-f0-9]{24}\/[a-zA-Z0-9]+\/?(?:\?layout=modern)?$/,
     "Dán Direct Chat Link từ tawk.to, dạng https://tawk.to/chat/PropertyID/WidgetID.",
-  );
+  )
+  // Layout belongs to the hosted direct-chat page, not the embedded SDK.
+  // Keep only the validated widget identity when storing or embedding a link.
+  .transform((value) => value.split("?")[0]);
 export const productSchema = z
   .object({
     id: line(80).optional(),
