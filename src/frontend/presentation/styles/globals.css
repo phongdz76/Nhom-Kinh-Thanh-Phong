@@ -2428,7 +2428,7 @@ textarea::placeholder {
   --admin-sidebar-width: 312px;
   min-height: 100vh;
   background: #f5f6f8;
-  font-size: 12px;
+  font-size: 16px;
 }
 :is(.admin-app, .login-card)
   :is(
@@ -6522,5 +6522,386 @@ textarea::placeholder {
   }
   .about-process-note p {
     font-size: 10px;
+  }
+}
+
+/* Readable, fluid administration workspace. */
+.admin-app {
+  --admin-sidebar-width: 332px;
+  --admin-secondary-color: #5f6d63;
+  line-height: 1.6;
+}
+.admin-app .admin-content {
+  max-width: none;
+  padding: 32px clamp(24px, 2.2vw, 56px);
+}
+.admin-app .admin-sidebar {
+  padding-inline: 16px;
+}
+.admin-app .admin-sidebar-bottom {
+  margin-top: auto;
+  padding-block: 20px;
+}
+.admin-app .admin-brand .brand {
+  gap: 10px;
+}
+.admin-app .admin-brand .brand-symbol {
+  --brand-size: 52px;
+}
+.admin-app .admin-brand .brand-wordmark strong {
+  font-size: 20px;
+}
+.admin-app .admin-brand .brand-wordmark small {
+  font-size: 11px;
+}
+.admin-app .workspace-label,
+.admin-app .admin-page-heading .eyebrow {
+  font-size: 12px;
+  color: var(--admin-secondary-color);
+}
+.admin-app .admin-sidebar nav > button,
+.admin-app .admin-logout {
+  min-height: 50px;
+  padding: 12px 16px;
+  font-size: 16px;
+}
+.admin-app .admin-sidebar nav > button > svg,
+.admin-app .admin-logout > svg {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+}
+.admin-app .admin-user {
+  padding-inline: 0;
+}
+.admin-app .admin-user strong {
+  font-size: 15px;
+}
+.admin-app .admin-user small {
+  font-size: 12px;
+  color: var(--admin-secondary-color);
+}
+.admin-app .admin-topbar {
+  height: 80px;
+  padding-inline: clamp(24px, 2.2vw, 56px);
+}
+.admin-app .admin-topbar > div > span {
+  font-size: 15px;
+}
+.admin-app .admin-page-heading {
+  gap: 24px;
+  margin-bottom: 32px;
+}
+.admin-app .admin-page-heading h1 {
+  font-size: clamp(28px, 2vw, 40px);
+  line-height: 1.3;
+}
+.admin-app .admin-page-heading p {
+  max-width: none;
+  font-size: 16px;
+  color: var(--admin-secondary-color);
+}
+.admin-app .button,
+.admin-app .text-link {
+  min-height: 44px;
+  font-size: 15px;
+}
+.admin-app .button {
+  padding: 12px 20px;
+}
+.admin-app .icon-button {
+  width: 44px;
+  height: 44px;
+}
+.admin-app .admin-stats {
+  gap: 24px;
+  margin-bottom: 28px;
+}
+.admin-app .stat-card {
+  padding: 26px;
+}
+.admin-app .stat-card > p {
+  padding-right: 50px;
+  font-size: 16px;
+}
+.admin-app .stat-card > strong {
+  font-size: 44px;
+  line-height: 1.2;
+  margin: 18px 0 12px;
+}
+.admin-app .stat-icon {
+  width: 44px;
+  height: 44px;
+  top: 22px;
+  right: 22px;
+}
+.admin-app .stat-icon > svg {
+  width: 24px;
+  height: 24px;
+}
+.admin-app .panel-heading {
+  padding: 24px 28px;
+  flex-wrap: wrap;
+}
+.admin-app .panel-heading h2,
+.admin-app .estimate-intro h2,
+.admin-app .estimate-saved h2,
+.admin-app .estimate-audit h2 {
+  font-size: 20px;
+}
+.admin-app .panel-heading p,
+.admin-app .stat-card > small,
+.admin-app .setup-item small,
+.admin-app .admin-featured-grid small,
+.admin-app .table-footer,
+.admin-app .admin-table td small,
+.admin-app .media-grid figcaption > span,
+.admin-app .content-list p,
+.admin-app .field-help,
+.admin-app .field-hint,
+.admin-app .estimate-details small,
+.admin-app .estimate-agreed p {
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--admin-secondary-color);
+}
+.admin-app .admin-panel .empty-state {
+  padding: 56px 24px;
+}
+.admin-app .admin-panel .empty-state h3,
+.admin-app .content-list h3,
+.admin-app .settings-info h2,
+.admin-app .settings-info h3,
+.admin-app .estimate-section-heading h3 {
+  font-size: 18px;
+}
+.admin-app .admin-panel .empty-state p,
+.admin-app .setup-item strong,
+.admin-app .admin-featured-grid span,
+.admin-app .recent-leads strong,
+.admin-app .content-category-list > button {
+  font-size: 16px;
+}
+.admin-app .setup-item {
+  gap: 14px;
+  margin: 22px 28px;
+}
+.admin-app .setup-item > span {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+.admin-app .setup-panel > .text-link {
+  margin-inline: 28px;
+}
+.admin-app .admin-featured-grid {
+  padding: 28px;
+  gap: 24px;
+}
+.admin-app .admin-featured-grid img {
+  height: auto;
+  aspect-ratio: 16 / 9;
+}
+.admin-app .admin-table-toolbar {
+  padding: 22px 28px;
+  flex-wrap: wrap;
+}
+.admin-app .admin-table th,
+.admin-app .admin-table-toolbar > select,
+.admin-app .admin-table-toolbar > span,
+.admin-app .form-grid label,
+.admin-app .editor-aside label,
+.admin-app .lead-detail form > label,
+.admin-app .estimate-editor label,
+.admin-app .estimate-editor legend {
+  font-size: 15px;
+}
+.admin-app .admin-table th,
+.admin-app .admin-table td {
+  padding: 18px 24px;
+}
+.admin-app .admin-table td,
+.admin-app .admin-table td strong,
+.admin-app .search-field input,
+.admin-app .form-grid input:not([type="checkbox"]):not([type="radio"]),
+.admin-app .form-grid :is(select, textarea),
+.admin-app .editor-aside select,
+.admin-app .lead-detail :is(select, textarea),
+.admin-app .estimate-editor :is(input, select, textarea) {
+  font-size: 16px;
+}
+.admin-app
+  .form-grid
+  :is(input, select):not([type="checkbox"]):not([type="radio"]),
+.admin-app
+  .estimate-editor
+  :is(input, select):not([type="checkbox"]):not([type="radio"]),
+.admin-app .admin-table-toolbar > select {
+  min-height: 46px;
+}
+.admin-app .form-grid textarea,
+.admin-app .estimate-editor textarea {
+  min-height: 132px;
+}
+.admin-app .settings-form .panel-heading {
+  padding-inline: 0;
+}
+.admin-app .settings-info p,
+.admin-app .estimate-intro p,
+.admin-app .estimate-saved > p,
+.admin-app .estimate-audit > p,
+.admin-app .estimate-summary p,
+.admin-app .estimate-details summary {
+  font-size: 16px;
+}
+.admin-app .estimate-section-heading span,
+.admin-app .estimate-line-result,
+.admin-app .estimate-editor .estimate-agreed-toggle,
+.admin-app .estimate-message {
+  font-size: 15px;
+}
+.admin-app .estimate-summary .estimate-total {
+  font-size: 22px;
+}
+.admin-app .media-grid {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+  gap: 24px;
+}
+.admin-app .media-grid img {
+  height: auto;
+  aspect-ratio: 4 / 3;
+}
+.admin-app .media-grid figcaption,
+.admin-app .recent-leads small,
+.admin-app .badge {
+  font-size: 13px;
+}
+.admin-app .admin-bottom-note {
+  font-size: 12px;
+}
+.admin-app .dialog-wide {
+  width: min(1040px, calc(100vw - 32px));
+}
+.admin-app .dialog-heading h2 {
+  font-size: 26px;
+}
+.admin-app .dialog-heading .eyebrow {
+  font-size: 12px;
+}
+.admin-app .dialog-footer > span,
+.admin-app .lead-message,
+.admin-app .lead-detail .specification-list {
+  font-size: 14px;
+}
+.admin-app .media-panel .panel-heading .button {
+  font-size: 15px;
+  min-height: 44px;
+}
+.admin-app .upload-label {
+  font-size: 15px !important;
+}
+.admin-app .editor-aside .inline-notice {
+  font-size: 14px !important;
+}
+@media (min-width: 1600px) {
+  .admin-app {
+    --admin-sidebar-width: 360px;
+  }
+  .admin-app .admin-content {
+    padding-top: 40px;
+  }
+  .admin-app .admin-user strong {
+    font-size: 16px;
+  }
+  .admin-app .admin-user small {
+    font-size: 13px;
+  }
+}
+@media (max-width: 1399px) {
+  .admin-app .admin-stats,
+  .admin-app .admin-featured-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .admin-app .admin-overview-grid,
+  .admin-app .settings-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 1100px) {
+  .admin-app .admin-sidebar {
+    width: min(var(--admin-sidebar-width), calc(100vw - 16px));
+    transform: translateX(-100%);
+    transition: transform 0.2s;
+  }
+  .admin-app .admin-sidebar.is-open {
+    transform: translateX(0);
+  }
+  .admin-app .admin-body {
+    margin-left: 0;
+  }
+  .admin-app .admin-menu-button {
+    display: flex;
+    margin-right: 12px;
+  }
+  .admin-app .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    background: #172d3b55;
+  }
+}
+@media (max-width: 600px) {
+  .admin-app .admin-content {
+    padding: 24px 16px;
+  }
+  .admin-app .admin-topbar {
+    height: 72px;
+    padding-inline: 16px;
+  }
+  .admin-app .admin-topbar > div > span {
+    font-size: 14px;
+  }
+  .admin-app .admin-stats {
+    gap: 14px;
+  }
+  .admin-app .stat-card {
+    padding: 18px;
+  }
+  .admin-app .stat-icon {
+    position: static;
+    width: 36px;
+    height: 36px;
+    margin-bottom: 12px;
+  }
+  .admin-app .stat-card > p {
+    padding-right: 0;
+    font-size: 15px;
+  }
+  .admin-app .stat-card > strong {
+    font-size: 36px;
+  }
+  .admin-app .panel-heading,
+  .admin-app .admin-featured-grid {
+    padding: 20px;
+  }
+  .admin-app .admin-table-toolbar .search-field {
+    min-width: 0;
+    flex-basis: 100%;
+  }
+}
+@media (max-width: 360px) {
+  .admin-app .admin-sidebar {
+    padding-inline: 12px;
+  }
+  .admin-app .admin-user {
+    gap: 8px;
+  }
+  .admin-app .admin-user > span {
+    width: 36px;
+    height: 36px;
+  }
+  .admin-app .admin-user small {
+    font-size: 11px;
   }
 }
