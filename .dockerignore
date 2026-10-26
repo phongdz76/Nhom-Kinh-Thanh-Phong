@@ -7,3 +7,7 @@ var
 artifacts
 test-results
 playwright-report
+tests
+.netlify
+.vercel
+coverage
