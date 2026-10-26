@@ -118,9 +118,11 @@ TypeScript và 45 unit test). Bản cài sạch đã chạy migration/seed trên
 `16.4.3`, Payload `3.92.0`. `npm audit --audit-level=moderate` không còn cảnh báo
 tại thời điểm kiểm tra. Override `esbuild` chỉ áp dụng cho nhánh phụ thuộc cũ
 `@esbuild-kit/core-utils`; migration được kiểm tra để xác nhận tương thích.
-Lượt Playwright cục bộ chưa đạt toàn bộ: thư mục build và một số file phụ thuộc
-bị mất trong khi server test đang chạy. Cần một lượt CI sạch thành công trước
-khi coi kiểm thử trình duyệt của bản phát hành là hoàn tất.
+CI sạch trên Linux đã đạt toàn bộ cài đặt, quét secret/lịch sử Git, audit,
+`npm run check`, chuẩn bị database test, build và Playwright cho commit
+`aa0f745`. Bộ trình duyệt gồm 34 test về API, đăng nhập/phân quyền, form, upload,
+chat, quản trị, bản đồ và điều hướng.
+[Kết quả CI ngày 26/10/2026](https://github.com/phongdz76/Nhom-Kinh-Thanh-Phong/actions/runs/40330598498).
 
 File môi trường, khóa dịch vụ, dữ liệu/media cục bộ, log, cache, build, trace và
 báo cáo test được giữ ngoài Git. CI tạo riêng tài khoản và khóa test tạm thời;
