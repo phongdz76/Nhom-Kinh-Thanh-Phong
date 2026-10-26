@@ -2471,7 +2471,8 @@ textarea::placeholder {
   display: grid;
   gap: 6px;
 }
-.admin-sidebar nav > button {
+.admin-sidebar nav > button,
+.admin-logout {
   display: flex;
   align-items: center;
   gap: 13px;
@@ -2481,7 +2482,8 @@ textarea::placeholder {
   font-size: 11px;
   color: #89958c;
 }
-.admin-sidebar nav > button:hover {
+.admin-sidebar nav > button:hover,
+.admin-logout:hover {
   background: #f7f9f6;
 }
 .admin-sidebar nav > button.active {
@@ -2497,7 +2499,7 @@ textarea::placeholder {
   border-radius: 4px;
 }
 .admin-sidebar-bottom {
-  margin-top: 18px;
+  margin-top: 6px;
   padding-bottom: 15px;
 }
 .admin-preview-card {
@@ -2518,18 +2520,7 @@ textarea::placeholder {
   line-height: 1.8;
 }
 .admin-logout {
-  display: flex;
   width: 100%;
-  gap: 10px;
-  align-items: center;
-  font-size: 12px;
-  padding: 12px;
-  border-radius: 5px;
-  text-align: left;
-  color: #74846e;
-}
-.admin-logout:hover {
-  background: #f7f9f6;
 }
 .admin-user {
   display: flex;
@@ -4682,7 +4673,8 @@ textarea::placeholder {
 .content-list p {
   color: #6b775f;
 }
-.admin-sidebar nav > button {
+.admin-sidebar nav > button,
+.admin-logout {
   color: #64705e;
   font-size: 12px;
 }
