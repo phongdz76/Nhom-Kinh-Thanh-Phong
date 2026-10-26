@@ -17,6 +17,7 @@ export const submitLead = endpoint(async (request) => {
   const result = await createLead(
     await readJSON(request),
     request.headers.get("idempotency-key"),
+    request.headers.get("x-form-token") || undefined,
   );
   return json(
     { code: result.code, status: "received" },

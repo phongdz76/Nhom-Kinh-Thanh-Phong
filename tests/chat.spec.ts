@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures/browser";
 import type { APIRequestContext } from "@playwright/test";
 import type { Settings } from "@/domain/models";
 import fs from "node:fs";
@@ -41,17 +41,25 @@ test.afterAll(async () => {
 });
 
 // This script runs in the embedded frame. No test messages reach tawk.to.
-const sdk = `
+const sdk = String.raw`
   const api=window.Tawk_API;
   const mount=document.getElementById(api.embedded);
   if(!mount)throw new Error('Missing embedded widget target');
-  const input=document.createElement('textarea');
-  input.setAttribute('aria-label','Test message');
-  mount.append(input);
-  const branding=document.createElement('p');
-  branding.textContent='Powered by tawk.to';
-  mount.append(branding);
-  queueMicrotask(()=>api.onLoad());
+  const frame=document.createElement('iframe');
+  frame.title='Vendor conversation';
+  mount.append(frame);
+  // Vendor-created inline scripts must work inside the chat frame while the
+  // website keeps its strict nonce CSP. A DOM-only SDK mock misses this failure.
+  frame.contentDocument.open();
+  frame.contentDocument.write('<!doctype html><html><head><style>' +
+    'body.font-lato{font-family:Lato,sans-serif!important}' +
+    '.tawk-chatinput-editor,.tawk-timeago{font-family:Lato,sans-serif!important}' +
+    '.tawk-icon{font-family:tawk-icon!important}' +
+    '</style></head><body class="font-lato"><script>' +
+    'setTimeout(function(){document.body.innerHTML=\'<textarea class="tawk-chatinput-editor" aria-label="Test message"></textarea><p>Powered by tawk.to</p><span class="tawk-icon">icon</span>\'},100)' +
+    '<' + '/script></body></html>');
+  frame.contentDocument.close();
+  api.onLoad();
 `;
 
 test("owner configures embedded chat; the inside close button preserves drafts without reloading the widget", async ({
@@ -74,7 +82,7 @@ test("owner configures embedded chat; the inside close button preserves drafts w
   await expect(input).toHaveValue(link);
   await input.fill("");
   await page.getByRole("button", { name: "Lưu thông tin" }).click();
-  await page.getByRole("link", { name: "Trở về website" }).click();
+  await page.getByRole("link", { name: "Về website Thanh Phong" }).click();
   await expect(
     page.getByRole("link", { name: "Gửi form tư vấn", exact: true }),
   ).toHaveAttribute("href", "/quotation");
@@ -97,7 +105,7 @@ test("owner configures embedded chat; the inside close button preserves drafts w
       })
     ).status(),
   ).toBe(400);
-  await page.getByRole("link", { name: "Trở về website" }).click();
+  await page.getByRole("link", { name: "Về website Thanh Phong" }).click();
   const trigger = page.getByRole("button", {
     name: "Chat tư vấn",
     exact: true,
@@ -112,8 +120,20 @@ test("owner configures embedded chat; the inside close button preserves drafts w
     "aria-busy",
     "false",
   );
-  const embedded = page.frameLocator(".live-chat-frame");
+  const embedded = page.frameLocator(".live-chat-frame").frameLocator("iframe");
   await expect(embedded.getByText("Powered by tawk.to")).toBeVisible();
+  await expect
+    .poll(() =>
+      embedded
+        .getByRole("textbox")
+        .evaluate((element) => getComputedStyle(element).fontFamily),
+    )
+    .toContain("Be Vietnam Pro");
+  expect(
+    await embedded
+      .locator(".tawk-icon")
+      .evaluate((element) => getComputedStyle(element).fontFamily),
+  ).toBe("tawk-icon");
   await embedded
     .getByRole("textbox", { name: "Test message" })
     .fill("Unsent draft");
@@ -138,7 +158,7 @@ test("owner configures embedded chat; the inside close button preserves drafts w
   await expect(input).toBeVisible();
   await expect(page.locator(".live-chat-frame")).toHaveCount(0);
   await expect(page.locator(".floating-consult")).toHaveCount(0);
-  await page.getByRole("link", { name: "Trở về website" }).click();
+  await page.getByRole("link", { name: "Về website Thanh Phong" }).click();
   await trigger.click();
   await expect(chat.locator(".live-chat-body")).toHaveAttribute(
     "aria-busy",
@@ -167,7 +187,7 @@ test("slow or forged readiness messages cannot open chat over admin", async ({
   });
   try {
     await page.goto("/admin?tab=settings");
-    await page.getByRole("link", { name: "Trở về website" }).click();
+    await page.getByRole("link", { name: "Về website Thanh Phong" }).click();
     await page
       .getByRole("button", { name: "Chat tư vấn", exact: true })
       .click();
@@ -186,7 +206,7 @@ test("slow or forged readiness messages cannot open chat over admin", async ({
     ).toBeVisible();
     release();
     await expect(page.locator(".live-chat-panel")).toHaveCount(0);
-    await page.getByRole("link", { name: "Trở về website" }).click();
+    await page.getByRole("link", { name: "Về website Thanh Phong" }).click();
     await page
       .getByRole("button", { name: "Chat tư vấn", exact: true })
       .click();

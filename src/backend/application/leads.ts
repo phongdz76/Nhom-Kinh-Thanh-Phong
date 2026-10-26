@@ -8,13 +8,18 @@ export function createLeadService(deps: {
   catalog: Pick<CatalogRepository, "findPublicProduct">;
   limiter: RateLimiter;
   hash(value: unknown): string;
+  verifySubmission(token: string | undefined): Promise<void>;
   newCode(): string;
   now(): string;
   notificationConfigured: boolean;
 }) {
   const { repository, catalog, limiter } = deps;
   return {
-    async createLead(input: unknown, key: string | null) {
+    async createLead(
+      input: unknown,
+      key: string | null,
+      verificationToken?: string,
+    ) {
       if (!key || !/^[a-f0-9-]{36}$/.test(key))
         throw new ApplicationError(
           "invalid",
@@ -25,6 +30,7 @@ export function createLeadService(deps: {
         ? `+84${values.phone.slice(1)}`
         : values.phone;
       const requestHash = deps.hash({ ...values, phone });
+      const contentHash = deps.hash({ ...values, phone, source: "" });
       function repeated(previous: { code: string; requestHash: string }) {
         if (previous.requestHash !== requestHash)
           throw new ApplicationError(
@@ -35,8 +41,10 @@ export function createLeadService(deps: {
       }
       const existing = await repository.findByKey(key);
       if (existing) return repeated(existing);
-      await limiter.check("lead-global", "all", 60, 60);
-      await limiter.check("lead-phone", phone, 5, 3600);
+      // Replays of an already stored identical request do not need a fresh
+      // single-use token and never create another lead/event/notification.
+      await limiter.check("lead-attempts-global", "all", 180, 60);
+      await deps.verifySubmission(verificationToken);
       const product = values.productId
         ? await catalog.findPublicProduct(values.productId)
         : null;
@@ -45,6 +53,10 @@ export function createLeadService(deps: {
           "invalid",
           "Mẫu sản phẩm không còn được công bố. Vui lòng chọn mẫu khác.",
         );
+      await limiter.check("lead-global", "all", 60, 60);
+      await limiter.check("lead-global-hour", "all", 300, 3600);
+      await limiter.check("lead-content", contentHash, 1, 60);
+      await limiter.check("lead-phone", phone, 5, 3600);
       const { contactAcknowledged, website, ...fields } = values;
       try {
         const lead = await repository.createWithEventAndNotification({

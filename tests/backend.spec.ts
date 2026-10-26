@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, mockFormChallenge } from "./fixtures/browser";
 import type { APIRequestContext } from "@playwright/test";
 import type { PublicSite } from "@/domain/models";
 import assert from "node:assert/strict";
@@ -205,16 +205,32 @@ test("lead submission is durable and simultaneous retries create one lead and on
 }) => {
   const key = randomUUID(),
     data = lead();
-  const options = { headers: { Origin: origin, "Idempotency-Key": key }, data };
+  const options = {
+    headers: {
+      Origin: origin,
+      "Idempotency-Key": key,
+      "X-Form-Token": "offline-form-test-token",
+    },
+    data,
+  };
   const responses = await Promise.all([
     request.post("/api/public/leads", options),
     request.post("/api/public/leads", options),
   ]);
-  expect(responses.map((r) => r.status()).sort()).toEqual([200, 201]);
+  // Admission can throttle an in-flight duplicate; a persisted identical retry
+  // must still return the original code without another token or notification.
+  expect(responses.some((response) => response.status() === 201)).toBe(true);
+  expect(
+    responses.every((response) => [200, 201, 429].includes(response.status())),
+  ).toBe(true);
+  const replay = await request.post("/api/public/leads", options);
+  expect(replay.status()).toBe(200);
   const codes = await Promise.all(
-    responses.map(async (r) => (await r.json()).code),
+    [...responses.filter((response) => response.ok()), replay].map(
+      async (r) => (await r.json()).code,
+    ),
   );
-  expect(codes[0]).toBe(codes[1]);
+  expect(new Set(codes).size).toBe(1);
   const rows = await pool.query(
     "SELECT id,code,status FROM leads WHERE idempotency_key=$1",
     [key],
@@ -252,7 +268,11 @@ test("lead submission is durable and simultaneous retries create one lead and on
   expect(
     (
       await request.post("/api/public/leads", {
-        headers: { Origin: origin, "Idempotency-Key": randomUUID() },
+        headers: {
+          Origin: origin,
+          "Idempotency-Key": randomUUID(),
+          "X-Form-Token": "offline-form-test-token",
+        },
         data: { ...lead(), status: "won" },
       })
     ).status(),
@@ -275,7 +295,11 @@ test("queue insertion failure rolls back lead and history together", async ({
     CREATE TRIGGER test_fail_notification BEFORE INSERT ON payload_jobs FOR EACH ROW EXECUTE FUNCTION test_fail_notification();`);
   try {
     const response = await request.post("/api/public/leads", {
-      headers: { Origin: origin, "Idempotency-Key": key },
+      headers: {
+        Origin: origin,
+        "Idempotency-Key": key,
+        "X-Form-Token": "offline-form-test-token",
+      },
       data: lead(),
     });
     expect(response.status()).toBe(503);
@@ -397,6 +421,7 @@ test("admin edits reach a separate anonymous browser and public form reaches adm
   });
   const page = await context.newPage();
   const visitor = await browser.newContext();
+  await mockFormChallenge(visitor);
   const publicPage = await visitor.newPage();
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
@@ -537,7 +562,11 @@ test("notification worker delivers to a local SMTP fixture without external mess
   try {
     const key = randomUUID();
     const created = await request.post("/api/public/leads", {
-      headers: { Origin: origin, "Idempotency-Key": key },
+      headers: {
+        Origin: origin,
+        "Idempotency-Key": key,
+        "X-Form-Token": "offline-form-test-token",
+      },
       data: lead(),
     });
     expect(created.status()).toBe(201);

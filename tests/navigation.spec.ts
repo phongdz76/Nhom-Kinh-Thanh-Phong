@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures/browser";
 import type { Page, Locator } from "@playwright/test";
 import assert from "node:assert/strict";
 import sharp from "sharp";

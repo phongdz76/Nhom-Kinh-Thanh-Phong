@@ -29,8 +29,11 @@ export function createSiteService(gateway: SiteGateway) {
         kind,
         kind === "posts" ? postSchema.parse(input) : projectSchema.parse(input),
       ),
-    addLead: (input: Parameters<SiteGateway["addLead"]>[0], key: string) =>
-      gateway.addLead(leadSchema.parse(input), key),
+    addLead: (
+      input: Parameters<SiteGateway["addLead"]>[0],
+      key: string,
+      token?: string,
+    ) => gateway.addLead(leadSchema.parse(input), key, token),
   };
 }
 export type SiteService = ReturnType<typeof createSiteService>;

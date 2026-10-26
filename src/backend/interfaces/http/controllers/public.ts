@@ -1,7 +1,9 @@
 import { findPublicProduct, publicSite } from "@/backend/composition/services";
 import { HttpError, endpoint, json } from "@/backend/interfaces/http/response";
+import { formProtection } from "@/backend/composition/form-protection";
 
 export const getSite = endpoint(async () => json(await publicSite()));
+export const getFormProtection = endpoint(async () => json(formProtection()));
 
 const normalize = (value: string) =>
   value

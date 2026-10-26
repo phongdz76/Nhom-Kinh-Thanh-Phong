@@ -31,7 +31,13 @@ export default buildConfig({
   telemetry: false,
   typescript: { autoGenerate: false },
   db: postgresAdapter({
-    pool: { connectionString: process.env.DATABASE_URL, max: 10 },
+    pool: {
+      connectionString: process.env.DATABASE_URL,
+      max: 5,
+      connectionTimeoutMillis: 5000,
+      idleTimeoutMillis: 10000,
+      statement_timeout: 15000,
+    },
     idType: "uuid",
     push: false,
     migrationDir: path.resolve("src/backend/infrastructure/payload/migrations"),

@@ -23,6 +23,7 @@ import type {
   User,
 } from "@/domain/models";
 import type { Estimate } from "@/domain/estimates";
+import type { FormProtection } from "@/domain/form-protection";
 
 export interface SiteGateway {
   publicSite(): Promise<PublicSite>;
@@ -40,7 +41,12 @@ export interface SiteGateway {
     kind: ContentKind,
     document: PostInput | ProjectInput,
   ): Promise<{ document: Article | Project }>;
-  addLead(lead: LeadInput, key: string): Promise<{ code: string }>;
+  formProtection(): Promise<FormProtection>;
+  addLead(
+    lead: LeadInput,
+    key: string,
+    token?: string,
+  ): Promise<{ code: string }>;
   logout(): Promise<{ ok: boolean }>;
 }
 export interface AuthGateway {
@@ -51,7 +57,15 @@ export interface AuthGateway {
   }): Promise<{ ok: boolean }>;
 }
 export interface ChatGateway {
-  embed(directChatUrl: string): { document: string };
+  embed(directChatUrl: string): { url: string };
+}
+export interface FormChallengeGateway {
+  render(
+    elementId: string,
+    siteKey: string,
+    onToken: (token: string) => void,
+    onError: () => void,
+  ): Promise<() => void>;
 }
 export interface EstimateGateway {
   list(): Promise<{ estimates: EstimateSummary[]; totalDocs: number }>;

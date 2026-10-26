@@ -68,6 +68,7 @@ test("a racing lead submission recovers the existing code through the repository
     catalog: { findPublicProduct: async () => null },
     limiter: { check: async () => {} },
     hash: () => "same-content",
+    verifySubmission: async () => {},
     newCode: () => "TP-NEW",
     now: () => "2026-10-24T13:00:00Z",
     notificationConfigured: false,

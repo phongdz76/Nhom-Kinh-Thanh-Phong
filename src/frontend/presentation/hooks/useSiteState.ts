@@ -198,8 +198,8 @@ export function useSiteState(
     publishedProducts: publicProducts,
     publicArticles: data.articles.filter((item) => item.status === "published"),
     publicProjects: data.projects.filter((item) => item.status === "published"),
-    addLead: (lead: LeadInput, key: string) =>
-      mutate(() => gateway.addLead(lead, key)),
+    addLead: (lead: LeadInput, key: string, token?: string) =>
+      mutate(() => gateway.addLead(lead, key, token)),
   };
 }
 export type SiteState = ReturnType<typeof useSiteState>;

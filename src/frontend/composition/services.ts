@@ -12,3 +12,4 @@ export const authService = createAuthService(authApi);
 export const estimateService = createEstimateService(estimateApi);
 export const siteService = createSiteService(siteApi);
 export const chatService = createChatService(tawkChatGateway);
+export { formChallengeGateway as formChallenge } from "@/frontend/infrastructure/security/turnstile";
