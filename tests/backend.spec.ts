@@ -586,6 +586,14 @@ test("notification worker delivers to a local SMTP fixture without external mess
     ).rows[0];
     expect(row.notification_state).toBe("sent");
     expect(received.some((text) => text.includes(row.code))).toBe(true);
+    await promisify(execFile)(
+      process.execPath,
+      ["--import", "tsx", "tests/fixtures/maintenance-runner.ts"],
+      {
+        env: { ...process.env, ...env, ENV_FILE: ".env.test.local" },
+        timeout: 30000,
+      },
+    );
   } finally {
     await new Promise((resolve) => server.close(resolve));
   }

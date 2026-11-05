@@ -76,7 +76,7 @@ jobs:
           node-version-file: .node-version
           cache: npm
       - run: npm ci
-      - name: Build, migrate and deploy to the environment's Netlify site
+      - name: Deploy verified commit to the environment's Netlify site
         run: |
           test -n "$NETLIFY_AUTH_TOKEN" || { echo "Missing Netlify deployment credential"; exit 1; }
           test -n "$NETLIFY_SITE_ID" || { echo "Missing environment-specific Netlify site ID"; exit 1; }

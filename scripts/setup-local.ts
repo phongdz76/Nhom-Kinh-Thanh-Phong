@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import { randomBytes } from "node:crypto";
 import { spawnSync } from "node:child_process";
+import { nativeInstalled } from "./lib/native-postgres";
 const envFile = fs.existsSync(".env.local")
   ? ".env.local"
   : fs.existsSync(".env")
@@ -17,11 +18,17 @@ if (!fs.existsSync(envFile)) {
     "Created .env.local. Generated credentials are stored there and are not printed.",
   );
 }
-const docker = spawnSync(
-  "docker",
-  ["compose", "--env-file", envFile, "up", "-d", "--wait", "db"],
-  { stdio: "inherit" },
-);
+const docker = nativeInstalled()
+  ? spawnSync(
+      process.execPath,
+      ["--import", "tsx", "scripts/ensure-database.ts"],
+      { stdio: "inherit", windowsHide: true },
+    )
+  : spawnSync(
+      "docker",
+      ["compose", "--env-file", envFile, "up", "-d", "--wait", "db"],
+      { stdio: "inherit", windowsHide: true },
+    );
 if (docker.status !== 0) {
   console.error("Open Docker Desktop, then run setup again.");
   process.exit(1);

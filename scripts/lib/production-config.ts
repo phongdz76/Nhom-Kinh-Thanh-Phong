@@ -1,5 +1,6 @@
 import { objectStorage } from "../../src/backend/infrastructure/storage/config";
 import { hostedChatOrigin } from "../../src/backend/infrastructure/chat/config";
+import { notificationConfig } from "../../src/backend/infrastructure/notifications/config";
 
 export function productionErrors(env: Record<string, string | undefined>) {
   const errors: string[] = [];
@@ -70,9 +71,10 @@ export function productionErrors(env: Record<string, string | undefined>) {
   } catch (error) {
     errors.push((error as Error).message);
   }
-  if (env.SMTP_HOST) {
-    requireValue("SMTP_FROM");
-    requireValue("LEAD_NOTIFICATION_EMAIL");
+  try {
+    notificationConfig(env);
+  } catch (error) {
+    errors.push((error as Error).message);
   }
   return errors;
 }

@@ -125,6 +125,27 @@ test("secret guard rejects credentials retained only in branch history", () => {
   });
 });
 
+test("secret guard protects backup encryption keys and standalone migration passwords", () => {
+  fixture((directory, git, check) => {
+    const backup = randomUUID() + randomUUID();
+    const password = randomUUID();
+    fs.writeFileSync(
+      path.join(directory, ".env.backup.local"),
+      `BACKUP_ENCRYPTION_KEY=${backup}\nDATABASE_MIGRATION_URL=postgresql://fixture:${password}@db.invalid/catalog\n`,
+    );
+    fs.writeFileSync(
+      path.join(directory, "application.ts"),
+      `export const leaked = ["${backup}", "${password}"];\n`,
+    );
+    git("add", "--", "application.ts");
+    const result = check();
+    assert.equal(result.status, 1);
+    assert.match(result.stderr?.toString() || "", /local environment secret/);
+    assert.equal(`${result.stdout}${result.stderr}`.includes(backup), false);
+    assert.equal(`${result.stdout}${result.stderr}`.includes(password), false);
+  });
+});
+
 test("secret guard detects credential tokens without a matching local env value", () => {
   fixture((directory, git, check) => {
     const token = "ghp_" + "A".repeat(36);
