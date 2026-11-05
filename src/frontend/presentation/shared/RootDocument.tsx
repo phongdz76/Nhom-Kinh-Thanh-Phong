@@ -15,6 +15,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
+  verification: {
+    google: "v0ucvuZbornBkNubigf6HbFmGsPHSPW6GzQM0Ovu4co",
+  },
   title: {
     default: "Nhôm kính Thanh Phong",
     template: "%s | Nhôm kính Thanh Phong",
