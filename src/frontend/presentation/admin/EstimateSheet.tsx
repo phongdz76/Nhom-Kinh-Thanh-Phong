@@ -1,3 +1,4 @@
+import { formatMetres } from "@/domain/measurements";
 import type { Estimate } from "@/domain/estimates";
 import {
   calculateEstimate,
@@ -47,12 +48,12 @@ export default function EstimateSheet({
             <th>
               RỘNG
               <br />
-              (mm)
+              (m)
             </th>
             <th>
               CAO
               <br />
-              (mm)
+              (m)
             </th>
             <th>SL</th>
             <th>ĐVT</th>
@@ -77,8 +78,8 @@ export default function EstimateSheet({
                 {line.description}
                 {line.agreedAmount !== null && <small> (giá chốt)</small>}
               </td>
-              <td>{line.width ? formatMoney(line.width) : "—"}</td>
-              <td>{line.height ? formatMoney(line.height) : "—"}</td>
+              <td>{line.width ? formatMetres(line.width) : "—"}</td>
+              <td>{line.height ? formatMetres(line.height) : "—"}</td>
               <td>{line.quantity}</td>
               <td>{unitLabel[line.unit]}</td>
               <td>{formatVolume(line.volume)}</td>

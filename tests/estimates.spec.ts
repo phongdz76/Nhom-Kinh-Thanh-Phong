@@ -2,6 +2,7 @@ import { test, expect } from "./fixtures/browser";
 import fs from "node:fs";
 import dotenv from "dotenv";
 import JSZip from "jszip";
+import ExcelJS from "exceljs";
 import {
   calculateEstimate,
   calculateLine,
@@ -170,6 +171,8 @@ test("owner-only quotations persist, reject stale writes, and export genuine A4 
       sheet.match(
         new RegExp(`<c\\b[^>]*\\br="${address}"[^>]*>([\\s\\S]*?)</c>`),
       )?.[1];
+    expect(cellXml("C9")).toContain("<v>0.91</v>");
+    expect(cellXml("D9")).toContain("<v>2.15</v>");
     expect(cellXml("G9")).toContain("<v>7.826</v>");
     expect(cellXml("I9")).toContain("<v>15652000</v>");
     expect(cellXml("I9")).toContain("IF(ISNUMBER(J9),J9,ROUND(G9*H9,0))");
@@ -256,6 +259,18 @@ test("admin can enter direct volume, save, download both files, and print the sa
   await page
     .getByLabel("Diễn giải hạng mục 1", { exact: true })
     .fill("Kính cường lực");
+  await page.getByLabel("Rộng (m) hạng mục 1", { exact: true }).fill("2m34");
+  await page.getByLabel("Cao (m) hạng mục 1", { exact: true }).fill("0m456");
+  await page
+    .getByLabel("Đơn giá (đ) hạng mục 1", { exact: true })
+    .fill("2000000");
+  await expect(page.getByTestId("estimate-total")).toHaveText("2.134.080đ");
+  await expect(
+    page.getByLabel("Rộng (m) hạng mục 1", { exact: true }),
+  ).toHaveValue("2,34");
+  await expect(
+    page.getByLabel("Cao (m) hạng mục 1", { exact: true }),
+  ).toHaveValue("0,456");
   await page
     .getByLabel("Cách nhập hạng mục 1", { exact: true })
     .selectOption("manual");
@@ -285,7 +300,43 @@ test("admin can enter direct volume, save, download both files, and print the sa
     const download = await downloadEvent;
     expect(await download.failure()).toBeNull();
   }
-  await page.getByRole("button", { name: "Nạp file mẫu", exact: true }).click();
+  const customerBook = new ExcelJS.Workbook();
+  const customerSheet = customerBook.addWorksheet("Bảng khách");
+  customerSheet.mergeCells("A1:C1");
+  customerSheet.getCell("A1").value = "BẢNG CỦA KHÁCH";
+  customerSheet.getColumn("A").width = 36;
+  customerSheet.getRow(2).values = [
+    "Cửa cũ",
+    2.34,
+    { formula: "B2*1000000", result: 2340000 },
+  ];
+  customerSheet.getCell("B2").numFmt = "0.000";
+  await page.getByLabel("File Excel của khách", { exact: true }).setInputFiles({
+    name: "bang-khach.xlsx",
+    mimeType:
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    buffer: Buffer.from(await customerBook.xlsx.writeBuffer()),
+  });
+  await expect(page.getByLabel("Ô A2", { exact: true })).toHaveValue("Cửa cũ");
+  await page.getByLabel("Ô A2", { exact: true }).fill("Cửa chỉnh lại");
+  await page.getByLabel("Ô B2", { exact: true }).fill("0,456");
+  const customerDownloadEvent = page.waitForEvent("download");
+  await page
+    .getByRole("button", { name: "Tải Excel đã chỉnh", exact: true })
+    .click();
+  const customerDownload = await customerDownloadEvent;
+  const editedBook = new ExcelJS.Workbook();
+  await editedBook.xlsx.readFile((await customerDownload.path())!);
+  const editedSheet = editedBook.getWorksheet("Bảng khách")!;
+  expect(editedSheet.getCell("A2").value).toBe("Cửa chỉnh lại");
+  expect(editedSheet.getCell("B2").value).toBe(0.456);
+  expect(editedSheet.getCell("B2").numFmt).toBe("0.000");
+  expect(editedSheet.getCell("C2").formula).toBe("B2*1000000");
+  expect(editedSheet.model.merges).toEqual(["A1:C1"]);
+  expect(editedSheet.getColumn("A").width).toBe(36);
+  await page
+    .getByRole("button", { name: "Nạp báo giá mẫu", exact: true })
+    .click();
   await expect(page.getByTestId("estimate-total")).toHaveText("163.705.200đ");
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(page.locator(".admin-sidebar")).not.toBeInViewport();

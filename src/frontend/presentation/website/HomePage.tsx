@@ -29,47 +29,49 @@ export default function HomePage() {
   return (
     <>
       <section className="hero">
-        <div className="hero-copy">
-          <div className="hero-copy-inner">
-            <span className="eyebrow">THANH PHONG · ALUMINUM & GLASS</span>
-            <h1>
-              Mở tầm nhìn.
-              <br />
-              Chạm <span>không gian.</span>
-            </h1>
-            <p>
-              Những đường nhôm tinh gọn. Những mảng kính đón sáng.
-              <br className="desktop-break" /> Cùng kiến tạo không gian sống
-              theo cách của bạn.
-            </p>
-            <div className="hero-buttons">
-              <Link href="/products" className="button button-primary">
-                Khám phá sản phẩm <Icon name="diagonal" size={17} />
-              </Link>
-              <Link href="/quotation" className="hero-secondary">
-                Tư vấn cho ngôi nhà <Icon name="arrow" size={17} />
-              </Link>
-            </div>
-            <div className="hero-foot">
-              <span className="hero-foot-symbol">
-                <Icon name="window" size={25} />
-              </span>
-              <div>
-                <strong>Đẹp từ đường nét. Hợp từng nhu cầu.</strong>
-                <span>Cửa nhôm · Vách kính · Lan can · Mái kính</span>
+        <div className="container hero-layout">
+          <div className="hero-copy">
+            <div className="hero-copy-inner">
+              <span className="eyebrow">THANH PHONG · ALUMINUM & GLASS</span>
+              <h1>
+                Mở tầm nhìn.
+                <br />
+                Chạm <span>không gian.</span>
+              </h1>
+              <p>
+                Những đường nhôm tinh gọn. Những mảng kính đón sáng.
+                <br className="desktop-break" /> Cùng kiến tạo không gian sống
+                theo cách của bạn.
+              </p>
+              <div className="hero-buttons">
+                <Link href="/products" className="button button-primary">
+                  Khám phá sản phẩm <Icon name="diagonal" size={17} />
+                </Link>
+                <Link href="/quotation" className="hero-secondary">
+                  Tư vấn cho ngôi nhà <Icon name="arrow" size={17} />
+                </Link>
+              </div>
+              <div className="hero-foot">
+                <span className="hero-foot-symbol">
+                  <Icon name="window" size={25} />
+                </span>
+                <div>
+                  <strong>Đẹp từ đường nét. Hợp từng nhu cầu.</strong>
+                  <span>Cửa nhôm · Vách kính · Lan can · Mái kính</span>
+                </div>
               </div>
             </div>
+            <span className="hero-lines" aria-hidden="true" />
           </div>
-          <span className="hero-lines" aria-hidden="true" />
-        </div>
-        <div className="hero-visual">
-          <Image
-            src="/images/hero-house.jpg"
-            alt="Không gian sống với cửa kính lớn nhìn ra khoảng hiên — ảnh minh họa"
-            fill
-            priority
-            sizes="(max-width: 760px) 100vw, 55vw"
-          />
+          <div className="hero-visual">
+            <Image
+              src="/images/hero-house.jpg"
+              alt="Không gian sống với cửa kính lớn nhìn ra khoảng hiên — ảnh minh họa"
+              fill
+              priority
+              sizes="(max-width: 760px) 92vw, (min-width: 2800px) 1280px, 46vw"
+            />
+          </div>
         </div>
       </section>
       <section className="benefit-strip">

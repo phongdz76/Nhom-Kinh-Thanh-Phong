@@ -37,7 +37,7 @@ export const estimateLineSchema = z
     )
       ctx.addIssue({
         code: "custom",
-        message: "Chiều rộng / chiều dài phải lớn hơn 0 mm.",
+        message: "Chiều rộng / chiều dài phải lớn hơn 0 m.",
         path: ["width"],
       });
     if (
@@ -47,7 +47,7 @@ export const estimateLineSchema = z
     )
       ctx.addIssue({
         code: "custom",
-        message: "Chiều cao phải lớn hơn 0 mm.",
+        message: "Chiều cao phải lớn hơn 0 m.",
         path: ["height"],
       });
   });
