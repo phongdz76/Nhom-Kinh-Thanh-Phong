@@ -1,4 +1,4 @@
-import { requestBodyLimit } from "../../src/backend/application/request-security";
+import { requestBodyLimit } from "../../src/backend/application/request-security.ts";
 
 // A native edge rule blocks excess requests before SSR/database work starts.
 // These two rules fit Netlify Free's current two-rule allowance.
