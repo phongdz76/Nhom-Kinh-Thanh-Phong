@@ -9,6 +9,7 @@ export default function PasswordForm() {
   const [busy, setBusy] = useState(false);
   return (
     <form
+      method="post"
       className="admin-panel settings-form"
       onSubmit={async (event) => {
         event.preventDefault();

@@ -1,9 +1,20 @@
 import { withPayload } from "@payloadcms/next/withPayload";
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Public build context also keeps preview Lambdas noindex at runtime.
+  env: { SITE_DEPLOY_CONTEXT: process.env.CONTEXT || "" },
+  ...(process.env.NEXT_BUILD_CPUS === "2" ? { experimental: { cpus: 2 } } : {}),
   poweredByHeader: false,
   async headers() {
     return [
+      {
+        source: "/admin/:path*",
+        headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
+      },
+      {
+        source: "/api/:path*",
+        headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
+      },
       {
         source: "/:path*",
         headers: [

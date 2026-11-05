@@ -16,6 +16,7 @@ export default function AdminLogin() {
         <h1>Chào mừng trở lại.</h1>
         <p>Đăng nhập để quản lý nội dung và yêu cầu tư vấn.</p>
         <form
+          method="post"
           onSubmit={async (event) => {
             event.preventDefault();
             if (busy) return;
@@ -65,6 +66,7 @@ export default function AdminLogin() {
             <Icon name="arrow" size={18} />
           </button>
         </form>
+        <noscript>Bật JavaScript để đăng nhập quản trị.</noscript>
         <p className="login-help">
           Tài khoản do chủ cơ sở khởi tạo. Không có đăng ký công khai.
         </p>

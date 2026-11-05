@@ -3,6 +3,7 @@ import { buildConfig } from "payload";
 import { postgresAdapter } from "@payloadcms/db-postgres";
 import { s3Storage } from "@payloadcms/storage-s3";
 import { nodemailerAdapter } from "@payloadcms/email-nodemailer";
+import { notificationConfig } from "@/backend/infrastructure/notifications/config";
 import {
   mediaURL,
   objectStorage,
@@ -13,6 +14,7 @@ import {
 } from "@/backend/infrastructure/payload/collections/backend";
 
 const storage = objectStorage(process.env);
+const notifications = notificationConfig(process.env);
 if (!process.env.PAYLOAD_SECRET || process.env.PAYLOAD_SECRET.length < 32)
   throw new Error("PAYLOAD_SECRET must contain at least 32 characters.");
 if (!process.env.DATABASE_URL)
@@ -39,16 +41,17 @@ export default buildConfig({
   }),
   collections,
   globals: [siteSettings],
-  ...(process.env.SMTP_HOST
+  ...(notifications
     ? {
         email: nodemailerAdapter({
           skipVerify: true,
-          defaultFromAddress: process.env.SMTP_FROM || "",
+          defaultFromAddress: notifications.from,
           defaultFromName: "Thanh Phong",
           transportOptions: {
-            host: process.env.SMTP_HOST,
-            port: Number(process.env.SMTP_PORT || 587),
-            secure: process.env.SMTP_PORT === "465",
+            host: notifications.host,
+            port: notifications.port,
+            secure: notifications.secure,
+            requireTLS: notifications.requireTLS,
             connectionTimeout: 10000,
             greetingTimeout: 10000,
             socketTimeout: 15000,

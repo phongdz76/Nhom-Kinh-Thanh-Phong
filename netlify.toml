@@ -7,11 +7,12 @@
   NEXT_TELEMETRY_DISABLED = "1"
   # These values are public website metadata, even when imported as secrets.
   # Database credentials, signing secrets and private API keys remain scanned.
-  SECRETS_SCAN_OMIT_KEYS = "SERVER_URL,CHAT_FRAME_ORIGIN,MEDIA_PUBLIC_URL,TURNSTILE_SITE_KEY,S3_ENDPOINT,S3_REGION,S3_BUCKET"
+  SECRETS_SCAN_OMIT_KEYS = "SERVER_URL,CHAT_FRAME_ORIGIN,MEDIA_PUBLIC_URL,TURNSTILE_SITE_KEY,S3_ENDPOINT,S3_REGION,S3_BUCKET,SMTP_HOST,SMTP_PORT"
 
 # The current Next.js adapter is auto-detected by Netlify. Do not add the
 # legacy Next.js plugin or redirect every request to index.html.
 [functions]
+  directory = "netlify/functions"
   node_bundler = "esbuild"
 
 [context.deploy-preview]

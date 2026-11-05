@@ -21,7 +21,6 @@ export const metadata = {
   },
   description:
     "Khám phá ý tưởng cửa nhôm, vách kính, mái kính và lan can cho không gian sống cùng Thanh Phong.",
-  robots: { index: false, follow: false },
 };
 
 export default function RootDocument({

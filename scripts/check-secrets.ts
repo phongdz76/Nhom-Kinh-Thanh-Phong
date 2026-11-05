@@ -20,13 +20,13 @@ function git(args: string[], input?: string) {
 }
 const secrets = new Set<string>();
 const privateName =
-  /(?:SECRET|PASS(?:WORD)?|TOKEN|PRIVATE.?KEY|API.?KEY|ACCESS.?KEY|DATABASE_URL)/i;
+  /(?:SECRET|PASS(?:WORD)?|TOKEN|PRIVATE.?KEY|API.?KEY|ACCESS.?KEY|ENCRYPTION.?KEY|DATABASE_(?:MIGRATION_)?URL)/i;
 
 function remember(values: Record<string, string | undefined>) {
   for (const [key, value] of Object.entries(values)) {
     if (!privateName.test(key) || !value || value.length < 8) continue;
     secrets.add(value);
-    if (/DATABASE_URL/i.test(key)) {
+    if (/DATABASE_(?:MIGRATION_)?URL/i.test(key)) {
       try {
         const password = new URL(value).password;
         if (password.length >= 8) {
