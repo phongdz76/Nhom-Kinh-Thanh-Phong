@@ -1,4 +1,5 @@
 import "server-only";
+import { formatMetres } from "@/domain/measurements";
 import ExcelJS from "exceljs";
 import {
   Document,
@@ -25,8 +26,8 @@ import {
 const headers = [
   "STT",
   "DIỄN GIẢI",
-  "RỘNG\n(mm)",
-  "CAO\n(mm)",
+  "RỘNG\n(m)",
+  "CAO\n(m)",
   "SL",
   "ĐVT",
   "KHỐI LƯỢNG",
@@ -128,8 +129,8 @@ export async function exportEstimateExcel(doc: Estimate) {
     row.values = [
       i + 1,
       line.description + (line.agreedAmount !== null ? " (giá chốt)" : ""),
-      line.width || null,
-      line.height || null,
+      line.width ? line.width / 1000 : null,
+      line.height ? line.height / 1000 : null,
       line.quantity,
       unitLabel[line.unit],
       null,
@@ -139,9 +140,9 @@ export async function exportEstimateExcel(doc: Estimate) {
     ];
     const formula =
       line.unit === "m2"
-        ? `C${r}*D${r}*E${r}/1000000`
+        ? `C${r}*D${r}*E${r}`
         : line.unit === "md"
-          ? `C${r}*E${r}/1000`
+          ? `C${r}*E${r}`
           : `E${r}`;
     sheet.getCell(`G${r}`).value =
       line.measurement === "manual"
@@ -151,6 +152,9 @@ export async function exportEstimateExcel(doc: Estimate) {
       formula: `IF(ISNUMBER(J${r}),J${r},ROUND(G${r}*H${r},0))`,
       result: line.amount,
     };
+    ["C", "D"].forEach((c) => {
+      sheet.getCell(`${c}${r}`).numFmt = "0.###";
+    });
     sheet.getCell(`G${r}`).numFmt = "0.######";
     ["H", "I", "J"].forEach((c) => {
       sheet.getCell(`${c}${r}`).numFmt = "#,##0";
@@ -310,8 +314,8 @@ export async function exportEstimateWord(doc: Estimate) {
     const values = [
       String(i + 1),
       line.description + (line.agreedAmount !== null ? " (giá chốt)" : ""),
-      line.width ? formatMoney(line.width) : "—",
-      line.height ? formatMoney(line.height) : "—",
+      line.width ? formatMetres(line.width) : "—",
+      line.height ? formatMetres(line.height) : "—",
       String(line.quantity),
       unitLabel[line.unit],
       formatVolume(line.volume),

@@ -2,6 +2,9 @@
 import { useSite } from "@/frontend/presentation/shared/SiteProvider";
 import Icon from "@/frontend/presentation/shared/Icon";
 import EstimateSheet from "./EstimateSheet";
+import EstimateDimensionInput from "./EstimateDimensionInput";
+import ExcelTableEditor from "./ExcelTableEditor";
+import { useRef } from "react";
 import {
   calculateEstimate,
   calculateLine,
@@ -19,6 +22,7 @@ import {
 import { estimateService } from "@/frontend/composition/services";
 export default function EstimateManager() {
   const { settings, user } = useSite();
+  const formRef = useRef<HTMLFormElement>(null);
   const {
     draft,
     records,
@@ -38,6 +42,9 @@ export default function EstimateManager() {
     loadExample,
     openRecord,
   } = useEstimateEditor(settings, user, estimateService);
+  function validatedPerform(action: "save" | "xlsx" | "docx" | "print") {
+    if (formRef.current?.reportValidity()) void perform(action);
+  }
   function numberField(
     line: EstimateLine,
     name: "width" | "height" | "quantity" | "volume" | "unitPrice",
@@ -80,8 +87,8 @@ export default function EstimateManager() {
         <div>
           <h2>Lập báo giá & quyết toán</h2>
           <p>
-            Thành tiền = Khối lượng × Đơn giá. Kích thước nhập bằng mm; khối
-            lượng tính theo m², mét dài hoặc bộ.
+            Thành tiền = Khối lượng × Đơn giá. Kích thước nhập bằng mét (m);
+            khối lượng tính theo m², mét dài hoặc bộ.
           </p>
         </div>
         <div className="estimate-actions">
@@ -99,7 +106,7 @@ export default function EstimateManager() {
             disabled={busy}
             onClick={loadExample}
           >
-            Nạp file mẫu
+            Nạp báo giá mẫu
           </button>
         </div>
       </section>
@@ -114,6 +121,7 @@ export default function EstimateManager() {
         </p>
       )}
       <form
+        ref={formRef}
         className="admin-panel estimate-editor"
         onSubmit={(event) => {
           event.preventDefault();
@@ -180,8 +188,12 @@ export default function EstimateManager() {
           <h3>
             Hạng mục thi công <small>({draft.lines.length}/40)</small>
           </h3>
-          <span>Kích thước: mm · Đơn giá: đồng / ĐVT</span>
+          <span>Kích thước: m · Đơn giá: đồng / ĐVT</span>
         </div>
+        <p className="field-help">
+          Ví dụ: 2m34 = 2,34 m; 0m456 = 0,456 m. Có thể dùng dấu phẩy hoặc dấu
+          chấm, tối đa 3 số lẻ.
+        </p>
         <div className="estimate-line-list">
           {draft.lines.map((line, index) => {
             const result = calculateLine(line);
@@ -262,15 +274,22 @@ export default function EstimateManager() {
                     )
                   ) : (
                     <>
-                      {line.unit !== "bo" &&
-                        numberField(
-                          line,
-                          "width",
-                          line.unit === "md" ? "Chiều dài (mm)" : "Rộng (mm)",
-                          20000,
-                        )}
-                      {line.unit === "m2" &&
-                        numberField(line, "height", "Cao (mm)", 20000)}
+                      {line.unit !== "bo" && (
+                        <EstimateDimensionInput
+                          key={`${draft.code}:${line.id}:${line.unit}:width`}
+                          value={line.width}
+                          label={`${line.unit === "md" ? "Chiều dài" : "Rộng"} (m) hạng mục ${index + 1}`}
+                          onChange={(width) => changeLine(line.id, { width })}
+                        />
+                      )}
+                      {line.unit === "m2" && (
+                        <EstimateDimensionInput
+                          key={`${draft.code}:${line.id}:height`}
+                          value={line.height}
+                          label={`Cao (m) hạng mục ${index + 1}`}
+                          onChange={(height) => changeLine(line.id, { height })}
+                        />
+                      )}
                       {numberField(line, "quantity", "Số lượng", 1000)}
                     </>
                   )}
@@ -453,7 +472,7 @@ export default function EstimateManager() {
             type="button"
             className="button button-outline"
             disabled={busy}
-            onClick={() => perform("xlsx")}
+            onClick={() => validatedPerform("xlsx")}
           >
             Xuất Excel (.xlsx)
           </button>
@@ -461,7 +480,7 @@ export default function EstimateManager() {
             type="button"
             className="button button-outline"
             disabled={busy}
-            onClick={() => perform("docx")}
+            onClick={() => validatedPerform("docx")}
           >
             Xuất Word (.docx)
           </button>
@@ -469,7 +488,7 @@ export default function EstimateManager() {
             type="button"
             className="button button-outline"
             disabled={busy}
-            onClick={() => perform("print")}
+            onClick={() => validatedPerform("print")}
           >
             Lưu & in A4
           </button>
@@ -535,6 +554,7 @@ export default function EstimateManager() {
           </div>
         </section>
       )}
+      <ExcelTableEditor />
       <section className="admin-panel estimate-saved">
         <h2>Báo giá đã lưu ({totalRecords})</h2>
         <p>

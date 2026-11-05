@@ -13,6 +13,8 @@
   --paper: #fafaf7;
   --background: #fff;
   --foreground: #273746;
+  --site-gutter: clamp(20px, 4vw, 128px);
+  --site-content-max: 2560px;
 }
 * {
   box-sizing: border-box;
@@ -85,8 +87,8 @@ button:disabled {
   outline-offset: 5px;
 }
 .container {
-  width: calc(100% - 96px);
-  max-width: 1248px;
+  width: calc(100% - var(--site-gutter) * 2);
+  max-width: var(--site-content-max);
   margin: 0 auto;
 }
 .section {
@@ -275,7 +277,6 @@ button:disabled {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  max-width: 1600px;
   height: 104px;
   gap: 28px;
 }
@@ -474,9 +475,12 @@ button:disabled {
   }
 }
 .hero {
+  background: #f6f7f2;
+}
+.hero-layout {
   display: grid;
-  grid-template-columns: 48% 52%;
-  min-height: 565px;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  min-height: clamp(500px, 32vw, 640px);
 }
 .hero-copy {
   background: #f6f7f2;
@@ -486,20 +490,22 @@ button:disabled {
   overflow: hidden;
 }
 .hero-copy-inner {
-  padding: 58px 36px 54px max(48px, calc((100vw - 1248px) / 2));
+  padding: clamp(32px, 2.5vw, 48px) clamp(24px, 3vw, 72px)
+    clamp(32px, 2.5vw, 48px) 0;
   width: 100%;
   position: relative;
   z-index: 1;
 }
 .hero h1 {
-  font-size: clamp(42px, 4.15vw, 65px);
+  font-size: clamp(42px, 3.5vw, 80px);
   font-weight: 500;
   line-height: 1.15;
   letter-spacing: -2.8px;
-  margin: 28px 0 24px;
+  margin: 24px 0 20px;
 }
 .hero h1 span {
   color: #668681;
+  white-space: nowrap;
 }
 .hero-copy p {
   font-size: 13px;
@@ -511,7 +517,7 @@ button:disabled {
   display: flex;
   align-items: center;
   gap: 26px;
-  margin: 30px 0 46px;
+  margin: 24px 0 28px;
 }
 .hero-secondary {
   display: inline-flex;
@@ -529,7 +535,7 @@ button:disabled {
   align-items: center;
   gap: 14px;
   border-top: 1px solid #dde3db;
-  padding-top: 25px;
+  padding-top: 20px;
   max-width: 390px;
 }
 .hero-foot-symbol {
@@ -569,7 +575,7 @@ button:disabled {
 }
 .hero-visual {
   position: relative;
-  min-height: 565px;
+  min-height: 0;
   overflow: hidden;
 }
 .hero-visual > img {
@@ -3299,24 +3305,7 @@ textarea::placeholder {
   display: none;
 }
 
-@media (min-width: 1600px) {
-  .hero-copy-inner {
-    padding-left: max(48px, calc((100vw - 1340px) / 2));
-  }
-  .hero {
-    min-height: 630px;
-  }
-  .hero-visual {
-    min-height: 630px;
-  }
-  .hero h1 {
-    font-size: 68px;
-  }
-}
 @media (max-width: 1200px) {
-  .container {
-    width: calc(100% - 64px);
-  }
   .header-inner {
     gap: 15px;
   }
@@ -3337,7 +3326,6 @@ textarea::placeholder {
     padding: 10px 13px;
   }
   .hero-copy-inner {
-    padding-left: 32px;
     padding-right: 28px;
   }
   .hero h1 {
@@ -3457,12 +3445,8 @@ textarea::placeholder {
   .search-toggle {
     display: none;
   }
-  .hero {
-    grid-template-columns: 49% 51%;
-    min-height: 540px;
-  }
-  .hero-visual {
-    min-height: 540px;
+  .hero-layout {
+    min-height: 500px;
   }
   .hero h1 {
     font-size: 43px;
@@ -3656,9 +3640,6 @@ textarea::placeholder {
   }
 }
 @media (max-width: 760px) {
-  .container {
-    width: calc(100% - 40px);
-  }
   .section {
     padding: 58px 0;
   }
@@ -3688,13 +3669,12 @@ textarea::placeholder {
   .header-quote svg {
     width: 12px;
   }
-  .hero {
-    display: flex;
-    flex-direction: column;
-    min-height: unset;
+  .hero-layout {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
   }
   .hero-copy-inner {
-    padding: 40px 24px 32px;
+    padding: 36px 0 32px;
   }
   .hero h1 {
     font-size: 47px;
@@ -3734,7 +3714,8 @@ textarea::placeholder {
     font-size: 9px;
   }
   .hero-visual {
-    min-height: 350px;
+    min-height: 0;
+    aspect-ratio: 4 / 3;
   }
   .hero-visual > img {
     object-position: center;
@@ -4426,8 +4407,8 @@ textarea::placeholder {
   }
 }
 @media (max-width: 420px) {
-  .container {
-    width: calc(100% - 36px);
+  :root {
+    --site-gutter: 18px;
   }
   .header-inner {
     gap: 9px;
@@ -4457,8 +4438,7 @@ textarea::placeholder {
     font-size: 42px;
   }
   .hero-copy-inner {
-    padding-left: 20px;
-    padding-right: 20px;
+    padding-inline: 0;
   }
   .hero-secondary {
     font-size: 9px;
@@ -4471,7 +4451,7 @@ textarea::placeholder {
     padding: 12px 14px;
   }
   .hero-visual {
-    min-height: 300px;
+    min-height: 0;
   }
   .hero-photo-caption > strong {
     font-size: 12px;
@@ -4650,7 +4630,15 @@ textarea::placeholder {
 }
 .hero-copy p {
   color: #667469;
+  font-size: 18px;
+  max-width: 58ch;
+}
+.hero .eyebrow {
   font-size: 14px;
+}
+.hero .hero-secondary,
+.hero-buttons .button {
+  font-size: 16px;
 }
 .heading-aside p,
 .about-copy > p,
@@ -4748,7 +4736,6 @@ textarea::placeholder {
   line-height: 1.75;
 }
 .benefit-grid {
-  max-width: 1600px;
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 .benefit {
@@ -4993,7 +4980,7 @@ textarea::placeholder {
 }
 @media (max-width: 1200px) and (min-width: 761px) {
   .hero-copy p {
-    font-size: 13px;
+    font-size: 16px;
   }
   .hero-secondary {
     font-size: 11px;
@@ -5001,7 +4988,7 @@ textarea::placeholder {
 }
 @media (max-width: 760px) {
   .hero-copy p {
-    font-size: 13px;
+    font-size: 16px;
   }
   .product-content h3 {
     font-size: 18px;
@@ -5079,6 +5066,51 @@ textarea::placeholder {
   }
   .process-section .heading-description {
     display: block;
+  }
+}
+
+/* The same content edges run from the brand through every public section. */
+@media (min-width: 1400px) {
+  .product-grid .product-image,
+  .project-grid .project-image,
+  .journal-grid .journal-image {
+    height: auto;
+    aspect-ratio: 4 / 3;
+  }
+  .about-collage {
+    height: clamp(455px, 24vw, 680px);
+  }
+  .about-main-photo {
+    height: calc(100% - 48px);
+  }
+  .about-small-photo {
+    height: 48%;
+  }
+  .about-copy > p {
+    max-width: 60ch;
+  }
+}
+@media (min-width: 1600px) {
+  .section-heading h2,
+  .about-copy h2 {
+    font-size: clamp(39px, 2.3vw, 56px);
+  }
+}
+@media (max-width: 900px) {
+  .hero-layout {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+  }
+  .hero-copy-inner {
+    padding: 36px 0 32px;
+  }
+  .hero h1 {
+    font-size: clamp(34px, 6.5vw, 54px);
+    letter-spacing: -1.4px;
+  }
+  .hero-visual {
+    min-height: 0;
+    aspect-ratio: 16 / 9;
   }
 }
 
@@ -6892,6 +6924,108 @@ textarea::placeholder {
     min-width: 0;
     flex-basis: 100%;
   }
+}
+.excel-table-editor {
+  padding: clamp(20px, 3vw, 32px);
+  min-width: 0;
+}
+.excel-table-editor > p {
+  margin-block: 12px;
+  line-height: 1.65;
+}
+.excel-table-editor fieldset {
+  border: 0;
+  padding: 0;
+  margin: 18px 0 0;
+  min-width: 0;
+}
+.excel-table-editor label {
+  display: grid;
+  gap: 8px;
+}
+.excel-table-editor input[type="file"] {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--line, #dde3df);
+}
+.excel-table-controls {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-block: 18px;
+}
+.excel-table-controls label {
+  flex: 1 1 200px;
+}
+.excel-table-controls input,
+.excel-table-controls select {
+  padding: 12px;
+  min-width: 0;
+  border: 1px solid #bdc8c1;
+  border-radius: 4px;
+  font: inherit;
+}
+.excel-table-scroll {
+  overflow: auto;
+  max-height: 680px;
+  max-width: 100%;
+  margin-top: 20px;
+  border: 1px solid #cbd5ce;
+}
+.excel-customer-table {
+  table-layout: fixed;
+  border-collapse: collapse;
+  background: white;
+  color: #1d2c40;
+}
+.excel-customer-table th {
+  background: #e9efeb;
+  color: #365648;
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid #cbd5ce;
+}
+.excel-customer-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.excel-customer-table td {
+  border: 1px solid #d7dfd9;
+  padding: 0;
+  vertical-align: middle;
+}
+.excel-customer-table textarea {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 38px;
+  border: 0;
+  border-radius: 0;
+  padding: 8px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+  resize: vertical;
+}
+.excel-customer-table textarea:focus {
+  outline: 2px solid #537c6c;
+  outline-offset: -2px;
+}
+.excel-customer-table textarea[aria-invalid="true"] {
+  outline: 2px solid #b64232;
+}
+.excel-readonly {
+  padding: 8px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.excel-readonly small {
+  display: block;
+  font-size: 12px;
+  opacity: 0.75;
 }
 @media (max-width: 360px) {
   .admin-app .admin-sidebar {
