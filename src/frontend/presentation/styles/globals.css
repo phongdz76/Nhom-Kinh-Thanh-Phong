@@ -941,11 +941,12 @@ button:disabled {
 }
 .project-type {
   display: block;
-  font-size: 8px;
-  color: #9aaca8;
+  font-size: 13px;
+  font-weight: 500;
+  color: #a6b8a8;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  margin: 20px 0 9px;
+  letter-spacing: 0.75px;
+  margin: 18px 0 8px;
 }
 .project-card h3 {
   font-size: 16px;
@@ -3861,7 +3862,7 @@ textarea::placeholder {
     font-size: 19px;
   }
   .project-type {
-    font-size: 9px;
+    font-size: 13px;
     margin-top: 16px;
   }
   .section-disclaimer {
