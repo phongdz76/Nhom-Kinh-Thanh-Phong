@@ -24,7 +24,7 @@ export default function ProductCard({ product }: { product: Product }) {
       </Link>
       <div className="product-content">
         <span className="product-code">
-          {product.code} <i /> {product.opening || "Theo công trình"}
+          {product.opening || "Theo công trình"}
         </span>
         <h3>
           <Link href={`/products/${product.id}`}>{product.name}</Link>

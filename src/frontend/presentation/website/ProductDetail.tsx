@@ -78,8 +78,7 @@ export default function ProductDetail({ id }: { id: string }) {
             {
               categories.find((category) => category.id === product.category)
                 ?.name
-            }{" "}
-            · {product.code}
+            }
           </span>
           <h1>{product.name}</h1>
           <p className="detail-subtitle">{product.subtitle}</p>

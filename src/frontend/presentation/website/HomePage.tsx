@@ -230,7 +230,7 @@ export default function HomePage() {
             </div>
           </div>
           <div className="project-grid">
-            {projects.map((project, index) => (
+            {projects.map((project) => (
               <Link
                 href={`/projects/${project.id}`}
                 className="project-card"
@@ -243,7 +243,6 @@ export default function HomePage() {
                     fill
                     sizes="(max-width: 760px) 100vw, 33vw"
                   />
-                  <span className="project-number">0{index + 1}</span>
                   <span className="card-open">
                     <Icon name="diagonal" />
                   </span>
