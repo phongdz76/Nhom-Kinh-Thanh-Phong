@@ -23,7 +23,7 @@ export default function ProductCard({ product }: { product: Product }) {
         </span>
       </Link>
       <div className="product-content">
-        <span className="product-code">
+        <span className="product-code" data-product-code={product.code}>
           {product.opening || "Theo công trình"}
         </span>
         <h3>

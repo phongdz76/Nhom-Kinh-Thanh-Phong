@@ -95,14 +95,14 @@ async function openCatalog(
   const query = new URLSearchParams({ q: prefix, ...parameters });
   await page.goto(`/products?${query}`);
   await expect(
-    page.locator(".catalog-grid .product-code").first(),
-  ).toContainText(prefix);
+    page.locator(".catalog-grid [data-product-code]").first(),
+  ).toHaveAttribute("data-product-code", new RegExp(`^${prefix}`));
 }
 const navigation = (page: Page) =>
   page.getByRole("navigation", { name: "Phân trang sản phẩm" });
 const summary = (page: Page) => page.locator(".catalog-page-summary");
 const firstCode = (page: Page) =>
-  page.locator(".catalog-grid .product-code").first();
+  page.locator(".catalog-grid [data-product-code]").first();
 const parameter = (page: Page, name: string) =>
   new URL(page.url()).searchParams.get(name);
 
@@ -113,7 +113,10 @@ test("pagination renders twelve cards, preserves every product, and scrolls with
   await expect(page.locator(".catalog-grid .product-card")).toHaveCount(12);
   await expect(summary(page)).toContainText("1–12");
   await expect(summary(page)).toContainText("97");
-  await expect(firstCode(page)).toContainText(`${prefix}-097`);
+  await expect(firstCode(page)).toHaveAttribute(
+    "data-product-code",
+    `${prefix}-097`,
+  );
   await expect(
     navigation(page).getByLabel("Trang trước", { exact: true }),
   ).toHaveAttribute("aria-disabled", "true");
@@ -181,19 +184,34 @@ test("direct links, reload and browser history restore page and all filters", as
     page: "3",
     utm_source: "catalog-test",
   });
-  await expect(firstCode(page)).toContainText(`${prefix}-025`);
+  await expect(firstCode(page)).toHaveAttribute(
+    "data-product-code",
+    `${prefix}-025`,
+  );
   await page.reload();
-  await expect(firstCode(page)).toContainText(`${prefix}-025`);
+  await expect(firstCode(page)).toHaveAttribute(
+    "data-product-code",
+    `${prefix}-025`,
+  );
   await expect(page.getByLabel("Sắp xếp sản phẩm")).toHaveValue("name");
   await navigation(page)
     .getByRole("link", { name: "Trang trước", exact: true })
     .click();
-  await expect(firstCode(page)).toContainText(`${prefix}-013`);
+  await expect(firstCode(page)).toHaveAttribute(
+    "data-product-code",
+    `${prefix}-013`,
+  );
   expect(parameter(page, "utm_source")).toBe("catalog-test");
   await page.goBack();
-  await expect(firstCode(page)).toContainText(`${prefix}-025`);
+  await expect(firstCode(page)).toHaveAttribute(
+    "data-product-code",
+    `${prefix}-025`,
+  );
   await page.goForward();
-  await expect(firstCode(page)).toContainText(`${prefix}-013`);
+  await expect(firstCode(page)).toHaveAttribute(
+    "data-product-code",
+    `${prefix}-013`,
+  );
   expect(parameter(page, "q")).toBe(prefix);
   expect(parameter(page, "sort")).toBe("name");
 });
@@ -218,7 +236,10 @@ test("category, opening, sorting and search reset pagination and clearing filter
     .getByRole("link", { name: "Trang 2", exact: true })
     .click();
   await page.getByLabel("Sắp xếp sản phẩm").selectOption("name");
-  await expect(firstCode(page)).toContainText(`${prefix}-003`);
+  await expect(firstCode(page)).toHaveAttribute(
+    "data-product-code",
+    `${prefix}-003`,
+  );
   expect(parameter(page, "page")).toBeNull();
   await navigation(page)
     .getByRole("link", { name: "Trang 2", exact: true })
